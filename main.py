@@ -573,7 +573,7 @@ async def image_error(error, ctx):
 
 @client.command(aliases=['др'])
 async def curdr(ctx):
-    if len(brthds.find()) > 0:
+    if len([i for i in brthds.find()]) > 0:
           imeninniks = list()
           for i in brthds.find():
                     imeninnik = await client.fetch_user(birth["member"])
