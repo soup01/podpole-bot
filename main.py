@@ -32,7 +32,8 @@ plrs = cluster["GMDOBOT"]["players"]
 mmbrs = cluster["GMDOBOT"]["members"]
 brthds = cluster["GMDOBOT"]["birthdays"]
 
-editor = 994898808322412555
+editor = 927634802096611469
+moder = 886682255211253760
 translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
@@ -125,7 +126,7 @@ async def on_message(message):
     gmobot = get(client.get_all_members(), id=993896677092106240)
     if gmobot.mention in message.content:
         await message.channel.send("<:VK_WTF:997209990278422598>")
-    if message.channel.id == 997430553403998309:
+    if message.channel.id == 997728986807406652:
         if len(message.content) == 5 and message.content[2] == ".":
             if brthds.find_one({"member": message.author.id}) is None:
                 brthds.insert_one({"member": message.author.id, "day": int(message.content[:2]), "month": int(message.content[3:]), "pozdravlen": False})
@@ -137,7 +138,7 @@ async def on_message(message):
 @tasks.loop(seconds = 60)
 async def checkday():
     moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
-    birthchannel = client.get_channel(997439439766814790)
+    birthchannel = client.get_channel(886678288704090193)
     if moscow_time.hour >= 10:
         for birth in brthds.find():
             imeninnik = await client.fetch_user(birth["member"])
@@ -546,7 +547,7 @@ async def anekdot(ctx):
 async def redis(ctx):
     redis = randimg(random.choice(["смешная редиска", "забавная редиска", "редиска", "редиска", "сок из редиски", "красная редиска"]))
 
-    embed = discord.Embed(title="Случайныйредисный", description=redis["title"], colour=discord.Colour.random())
+    embed = discord.Embed(title="Случайный редисный", description=redis["title"], colour=discord.Colour.random())
     embed.set_image(url=redis["link"])
     embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
 
@@ -569,6 +570,18 @@ async def image(ctx, *, arg):
 @image.error
 async def image_error(error, ctx):
     await ctx.send("Произошла неизвестная ошибка =)")
+
+@client.command(aliases=['др'])
+@commands.has_role(admin)
+async def curdr(ctx):
+    if len(brthds.find()) > 0:
+          imeninniks = list()
+          for i in brthds.find():
+                    imeninnik = await client.fetch_user(birth["member"])
+                    imeninniks.append(f"{imeninnik} ({i['day']}.{i['month']})")
+          await ctx.send(", ".join(imneninniks))
+    else:
+          await ctx.send("Никого нет в базе данных =)")
 
 client.remove_command('help')
 @client.command(aliases=["хелп"])
