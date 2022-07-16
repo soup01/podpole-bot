@@ -32,8 +32,7 @@ plrs = cluster["GMDOBOT"]["players"]
 mmbrs = cluster["GMDOBOT"]["members"]
 brthds = cluster["GMDOBOT"]["birthdays"]
 
-editor = 927634802096611469
-moder = 886682255211253760
+editor = 994898808322412555
 translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
@@ -126,7 +125,7 @@ async def on_message(message):
     gmobot = get(client.get_all_members(), id=993896677092106240)
     if gmobot.mention in message.content:
         await message.channel.send("<:VK_WTF:997209990278422598>")
-    if message.channel.id == 997728986807406652:
+    if message.channel.id == 997430553403998309:
         if len(message.content) == 5 and message.content[2] == ".":
             if brthds.find_one({"member": message.author.id}) is None:
                 brthds.insert_one({"member": message.author.id, "day": int(message.content[:2]), "month": int(message.content[3:]), "pozdravlen": False})
@@ -138,7 +137,7 @@ async def on_message(message):
 @tasks.loop(seconds = 60)
 async def checkday():
     moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
-    birthchannel = client.get_channel(886678288704090193)
+    birthchannel = client.get_channel(997439439766814790)
     if moscow_time.hour >= 10:
         for birth in brthds.find():
             imeninnik = await client.fetch_user(birth["member"])
