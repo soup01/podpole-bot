@@ -572,7 +572,6 @@ async def image_error(error, ctx):
     await ctx.send("Произошла неизвестная ошибка =)")
 
 @client.command(aliases=['др'])
-@commands.has_role(admin)
 async def curdr(ctx):
     if len(brthds.find()) > 0:
           imeninniks = list()
