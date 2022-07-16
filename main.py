@@ -571,16 +571,6 @@ async def image(ctx, *, arg):
 async def image_error(error, ctx):
     await ctx.send("Произошла неизвестная ошибка =)")
 
-@client.command(aliases=['др'])
-async def curdr(ctx):
-    if len([i for i in brthds.find()]) > 0:
-          imeninniks = list()
-          for i in brthds.find():
-                    imeninnik = await client.fetch_user(i["member"])
-                    await ctx.send(f"{imeninnik.name} ({'0' + str(i['day']) if i['day'] < 10 else i['day']}.{'0' + str(i[['month']]) if i['month'] < 10 else i['month']})")
-    else:
-          await ctx.send("Никого нет в базе данных =)")
-
 client.remove_command('help')
 @client.command(aliases=["хелп"])
 async def help(ctx, arg=None):
