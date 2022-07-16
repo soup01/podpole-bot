@@ -397,7 +397,7 @@ async def level(ctx, *, posname = None):
             embed = discord.Embed(title=f"{lvl['name']}", colour=0x6ad96e)
             embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
             embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
-            embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):', value=',\n'.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет', inline=False)
+            embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):', value=', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет', inline=False)
             embed.set_footer(text="(C) Official Podpol'e Demonlist")
             await ctx.send(embed=embed)
         else:
@@ -539,7 +539,7 @@ async def anekdot(ctx):
 
     embed = discord.Embed(description=anekdot, colour=discord.Colour.random())
     embed.set_author(name="Случайный анекдот", url=parse)
-    embed.set_footer(text=f"Дата: {date}. (C) Official Podpol'e Demonlist")
+    embed.set_footer(text=f"Дата: {date}. (C) Official Podpol'e Bot")
 
     await ctx.send(embed=embed)
 
@@ -549,7 +549,7 @@ async def redis(ctx):
 
     embed = discord.Embed(title="Случайный редисный", description=redis["title"], colour=discord.Colour.random())
     embed.set_image(url=redis["link"])
-    embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
+    embed.set_footer(text=f"(C) Official Podpol'e Bot")
 
     await ctx.send(embed=embed)
 
@@ -563,7 +563,7 @@ async def image(ctx, *, arg):
 
     embed = discord.Embed(title=f"Случайная картинка по запросу **{arg}**", description=redis["title"], colour=discord.Colour.random())
     embed.set_image(url=redis["link"])
-    embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
+    embed.set_footer(text=f"(C) Official Podpol'e Bot")
 
     await ctx.send(embed=embed)
 
@@ -577,7 +577,7 @@ async def help(ctx, arg=None):
     if arg in ["рулетка", "roulette", "r", "р"]:
         embed1 = discord.Embed(title='?рулетка <рекорд/"сброс">', description='Для того, чтобы начать рулетку, достаточно написать команду `?рулетка`, после чего бот отправит вам уровень, который вы должны будете пройти на 1% или более. Далее вам нужно будет прописать `?рулетка [поставленный вами рекорд]`, и, соответственно, на следующем выпавшем демоне вы уже должны будете поставить рекорд больше предыдущего хотя бы на 1%. Ровно такой же принцип действует и далее, пока вы не дойдете до значения 100.'
                                                                               '\nТак же при желании начать игру с самого начала - вам стоит написать `?рулетка сброс`. Таким образом вы сбросите весь ваш прогресс и сможете начать игру по новой.', colour=0xff4747)
-        embed1.set_footer(text=f"(C) Official Podpol'e Demonlist")
+        embed1.set_footer(text=f"(C) Official Podpol'e Bot")
         await ctx.send(embed=embed1)
     elif arg is None:
         embed1=discord.Embed(title="📜 Демонлист", description="**P.s.:** [] - обязательный аргумент, <> - необязательный аргумент", colour=0xff4747)
@@ -603,7 +603,7 @@ async def help(ctx, arg=None):
         embed1.add_field(name='?dlrools',
                          value=f'```Показывает правила для попадания вашего прохождения в демонлист.```',
                          inline=False)
-        embed1.set_footer(text=f"Страница 1/2. (C) Official Podpol'e Demonlist")
+        embed1.set_footer(text=f"Страница 1/2. (C) Official Podpol'e Bot")
 
         embed2 = discord.Embed(title="😜 Приколы", description="**P.s.:** [] - обязательный аргумент, <> - необязательный аргумент", colour=0xff4747)
         embed2.set_author(name="Текущие команды:")
@@ -616,7 +616,7 @@ async def help(ctx, arg=None):
         embed2.add_field(name='?редис',
                          value=f'```Выдаёт случайный редис из тех же Google картинок (да, для этого обязательно нужна отдельная команда).```',
                          inline=False)
-        embed2.set_footer(text=f"Страница 2/2. (C) Official Podpol'e Demonlist")
+        embed2.set_footer(text=f"Страница 2/2. (C) Official Podpol'e Bot")
 
         await browse_pages(ctx, 1, 2, [embed1,embed2], False)
     else:
@@ -630,7 +630,7 @@ async def dlrools(ctx):
     embed.add_field(name="Правило 1.3",
                     value="```Если вы использовали различного рода сикрет веи и другие нечестные пути заполучить преимущество в сложности в уровне - ваше прохождение не будет добавлено в демонлист.```", inline=True)
     embed.add_field(name="Правило 1.4", value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
-    embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
+    embed.set_footer(text=f"(C) Official Podpol'e Bot")
     await ctx.send(embed=embed)
 
 
