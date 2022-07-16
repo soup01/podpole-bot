@@ -577,8 +577,8 @@ async def curdr(ctx):
           imeninniks = list()
           for i in brthds.find():
                     imeninnik = await client.fetch_user(i["member"])
-                    imeninniks.append(f"{imeninnik} ({i['day']}.{i['month']})")
-          await ctx.send(", ".join(imneninniks))
+                    imeninniks.append(f"{imeninnik} ({'0' + str(i['day']) if i['day'] < 10 else i['day']}.{'0' + str(i[['month']]) if i['month'] < 10 else i['month']})")
+          await ctx.send(", ".join(imeninniks))
     else:
           await ctx.send("Никого нет в базе данных =)")
 
