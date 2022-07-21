@@ -551,7 +551,7 @@ async def рулетка(inter, рекорд = None):
 	elif int(рекорд) > 100 or (int(рекорд) > 0 and len(roulettelvls) == 0):
 		await inter.edit_original_message(content="ты кому пиздиш падла")
 	elif int(рекорд) == 100:
-		await inter.edit_original_message(content=f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text}. Вызовите еще раз команду чтобы начать игру!")
+		await inter.edit_original_message(content=f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text if len(roulettelvls) != 0 else '0 уровней =)'}. Вызовите еще раз команду чтобы начать игру!")
 		mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif int(рекорд) <= prevrecord and (int(рекорд) !=0 or len(roulettelvls)):
 		await inter.edit_original_message(content=f"Указанный вами процент меньше или равен вашему предыдущему рекорду в {prevrecord}%!")
