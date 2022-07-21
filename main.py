@@ -25,6 +25,7 @@ import urllib.request
 import urllib.parse
 
 client = commands.Bot(command_prefix=commands.when_mentioned_or('?'), intents=disnake.Intents.all())
+converter = commands.MemberConverter()
 
 # монгодб
 cluster = MongoClient(mongotok)
@@ -57,7 +58,7 @@ def calc_lb():
 	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
-	msg = await ctx.response.send_message(embed=embeds[pg - 1])
+	msg = await ctx.edit_original_message(embed=embeds[pg - 1])
 
 	if pages > 1:
 		reactionslist = ["⏪", "◀", "▶", "⏩"] if more_buttons else ["◀", "▶"]
@@ -87,19 +88,18 @@ async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 					elif str(reaction.emoji) == reactionslist[0]:
 						pg = 1
 				await msg.remove_reaction(str(reaction.emoji), ctx.author)
-				await msg.edit(embed=embeds[pg - 1])
+				await ctx.edit_original_message(embed=embeds[pg - 1])
 
 def get_passed_levels(player):
 	passedlevels = []
-	proofs = []
 	for lvl in deml.find():
 		for victor in lvl["victors"]:
 			if victor[0].lower() == player.lower():
+				lvl["proof"] = victor[1]
 				passedlevels.append(lvl)
-				proofs.append(victor[1])
 				break
 	passedlevels.sort(key=lambda x: x['position'])
-	return passedlevels, proofs
+	return passedlevels
 
 def randimg(search):
 	q = urllib.parse.quote_plus(search, safe='?&=')
@@ -120,6 +120,7 @@ def gk(d):
 @client.event
 async def on_ready():
 	print("Бот запущен!")
+	plrs.update_many({}, {"$unset": { "curpercent" : 1, "roulettelvls" : 1} })
 	checkday.start()
 
 @client.event
@@ -133,7 +134,6 @@ async def on_message(message):
 				brthds.insert_one({"member": message.author.id, "day": int(message.content[:2]), "month": int(message.content[3:]), "pozdravlen": False})
 			else:
 				brthds.update_one({"member": message.author.id}, {"$set": {"day": int(message.content[:2]), "month": int(message.content[3:])}})
-	print(message.content)
 	await client.process_commands(message)
 
 @tasks.loop(seconds = 60)
@@ -162,8 +162,9 @@ async def checkday():
                    description='Показывает топ 100 сложнейших демонов, пройденных в Подполье.',
 					options=[disnake.Option("страница", description="Номер страницы", required=False, type=disnake.OptionType.integer)])
 async def дл(inter, страница: int = 1):
+	await inter.response.defer()
 	if random.randint(1,10) == 1:
-		await inter.response.send_message("ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
+		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
 	else:
 		lvlsamount = len([lvl for lvl in deml.find()])
 		pages = ceil(lvlsamount/10) if lvlsamount <= 100 else 10
@@ -181,13 +182,13 @@ async def дл(inter, страница: int = 1):
 
 			await browse_pages(inter, страница, pages, embeds)
 		else:
-			await inter.response.send_message("На этой странице ещё нет уровней!")
+			await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 
 @client.slash_command(name='легаси',
                    description='Показывает топ уровней, вылетевших из основного топа 100 (сюда прохождения больше не принимаются).',
 					options=[disnake.Option("страница", description="Номер страницы", required=False, type=disnake.OptionType.integer)])
 async def легаси(inter, страница: int = 1):
-
+	await inter.response.defer()
 	lvlsamount = len([lvl for lvl in deml.find()])
 	if lvlsamount > 100:
 		pages = ceil((lvlsamount-100)/10)
@@ -205,9 +206,9 @@ async def легаси(inter, страница: int = 1):
 
 			await browse_pages(inter, страница, pages, embeds)
 		else:
-			await inter.response.send_message("На этой странице ещё нет уровней!")
+			await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 	else:
-		await inter.response.send_message("мужик легаси не существует")
+		await inter.edit_original_message(content="мужик легаси не существует")
 
 # ГОТОВО
 @client.command(aliases=['add','добавить','добавитьуровень'])
@@ -297,7 +298,8 @@ async def addproof(ctx, pos: int, victor, video):
 		vict = [vic for vic in victors if vic[0].lower() == victor.lower()]
 		print(vict)
 		if len(vict) > 0:
-			victors.pop(victors.index(vict[0]))
+			vict = vict[0]
+			victors.pop(victors.index(vict))
 			victors.append([victor, video])
 			deml.update_one({"position": pos}, {"$set": {"victors": victors}})
 			await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} успешно добавлен.")
@@ -316,8 +318,11 @@ async def delproof(ctx, pos: int, victor):
 		vict = [vic for vic in victors if vic[0].lower() == victor.lower()]
 		print(vict)
 		if len(vict) > 0:
+			vict = vict[0]
+			print(victors)
+			print(vict)
 			if vict[1] is not None:
-				victors.pop(victors.index(vict[0]))
+				victors.pop(victors.index(vict))
 				victors.append([victor, None])
 				deml.update_one({"position": pos}, {"$set": {"victors": victors}})
 				await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} удалён.")
@@ -403,6 +408,7 @@ async def disconnect(ctx, member: disnake.Member):
                    description='Показывает всю информацию об игроке в демонлисте.',
 					options=[disnake.Option("уровень", description="Можно указать как и позицию уровня, так и его название", required=True, type=disnake.OptionType.string)])
 async def уровень(inter, *, уровень = None):
+	await inter.response.defer()
 	if уровень is not None:
 		try:
 			lvl = deml.find_one({"position": int(уровень)})
@@ -419,76 +425,85 @@ async def уровень(inter, *, уровень = None):
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):', value=', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет', inline=False)
 			embed.set_footer(text="(C) Official Podpol'e Demonlist")
-			await inter.response.send_message(embed=embed)
+			await inter.edit_original_message(embed=embed)
 		else:
-			await inter.response.send_message('(netu takova)')
+			await inter.edit_original_message(content='(netu takova)')
 	else:
-		await inter.response.send_message(f'чо')
-
-async def playercommand(inter, player):
-	passedlevels, proofs = get_passed_levels(player)
-
-	if len(passedlevels) > 0:
-		player = player.lower()
-		leaderboard = calc_lb()
-		leaderboardlower = {i.lower(): leaderboard[i] for i in leaderboard}
-
-		main = 0
-		legacy = 0
-		passedlevelsf = list()
-		for lvl in passedlevels:
-			if lvl["position"] <= 50:
-				passedlevelsf.append(f"**[{lvl['name']}]({proofs[passedlevels.index(lvl)]})**")
-				main += 1
-			elif lvl["position"] <= 100:
-				passedlevelsf.append(f"[{lvl['name']}]({proofs[passedlevels.index(lvl)]})")
-			else:
-				passedlevelsf.append(f"*[{lvl['name']}]({proofs[passedlevels.index(lvl)]})*")
-				legacy += 1
-		passedlevelsf = ", ".join(passedlevelsf)
-
-		embed = disnake.Embed(title=f"Профиль {gk(leaderboard)[gk(leaderboardlower).index(player)]}", colour=0x82e0da)
-		embed.add_field(name='📊 Место в топе:', value=f"**#{gk(leaderboardlower).index(player) + 1}**", inline=True)
-		embed.add_field(name='📈 Поинтов:', value=f"**{round(leaderboardlower[player], 1)}**<:GD_STAR:997218626006425690>", inline=True)
-		embed.add_field(name='🧮 Пройдено уровней:', value=f"**{len(passedlevels)}**", inline=True)
-		embed.add_field(name='🟥 Main:', value=f"**{main}**", inline=True)
-		embed.add_field(name='🟧 Extended:', value=f"**{len(passedlevels) - main - legacy}**", inline=True)
-		embed.add_field(name='🟩 Legacy:', value=f"**{legacy}**", inline=True)
-		embed.add_field(name='🃏 Хардест:', value=f"**{passedlevels[0]['name']}** by **{passedlevels[0]['author']}**",
-						inline=False)
-		if len(passedlevels) < 33:
-			embed.add_field(name='📜 Пройденные уровни:', value=passedlevelsf, inline=False)
-			embed.set_footer(text="(C) Official Podpol'e Demonlist")
-
-		await inter.response.send_message(embed=embed)
-		if len(passedlevels) >= 33:
-			embed2 = disnake.Embed(title="📜 Пройденные уровни:", description=passedlevelsf, colour=0x4ac4d4)
-			embed2.set_footer(text="(C) Official Podpol'e Demonlist")
-			await inter.response.send_message(embed=embed2)
-	else:
-		await inter.response.send_message("Такого игрока нет в топе!")
+		await inter.edit_original_message(content=f'чо')
 
 @client.slash_command(name='профиль',
                    description='Показывает всю информацию об игроке в демонлисте.',
-					options=[disnake.Option("игрок", description="Можно указать как и тег игрока в дискорде, так и его ник в листе", required=True, type=disnake.OptionType.user)])
+					options=[disnake.Option("игрок", description="Можно указать как и тег игрока в дискорде, так и его ник в листе", required=True)])
 async def профиль(inter, игрок: disnake.User):
-	plr = plrs.find_one({"discordtag": игрок.id})
-	if plr is not None:
-		await playercommand(inter, plr["nick"])
-	else:
-		await inter.response.send_message("Этот участник не привязан к демонлисту!")
+	await inter.response.defer()
 
-@профиль.error
-async def профиль_error(inter, error):
-	if isinstance(error, commands.UserNotFound):
-		await playercommand(inter, str(error)[6:-12])
+	# говнокод космических масштабов
+	try:
+		player = await converter.convert(inter, игрок[3:-1])
+	except:
+		try:
+			player = await converter.convert(inter, игрок)
+		except:
+			player = игрок
+	if player != игрок:
+		player = plrs.find_one({"discordtag": player.id})
+		if player is not None:
+			player = player["nick"]
+
+	if player is not None:
+		passedlevels = get_passed_levels(player)
+
+		if len(passedlevels) > 0:
+			player = player.lower()
+			leaderboard = calc_lb()
+			leaderboardlower = {i.lower(): leaderboard[i] for i in leaderboard}
+
+			main = 0
+			legacy = 0
+			passedlevelsf = list()
+			for lvl in passedlevels:
+				if lvl["position"] <= 50:
+					passedlevelsf.append(f"**[{lvl['name']}]({lvl['proof']})**")
+					main += 1
+				elif lvl["position"] <= 100:
+					passedlevelsf.append(f"[{lvl['name']}]({lvl['proof']})")
+				else:
+					passedlevelsf.append(f"*[{lvl['name']}]({lvl['proof']})*")
+					legacy += 1
+			passedlevelsf = ", ".join(passedlevelsf)
+
+			embed = disnake.Embed(title=f"Профиль {gk(leaderboard)[gk(leaderboardlower).index(player)]}",
+								  colour=0x82e0da)
+			embed.add_field(name='📊 Место в топе:', value=f"**#{gk(leaderboardlower).index(player) + 1}**",
+							inline=True)
+			embed.add_field(name='📈 Поинтов:',
+							value=f"**{round(leaderboardlower[player], 1)}**<:GD_STAR:997218626006425690>", inline=True)
+			embed.add_field(name='🧮 Пройдено уровней:', value=f"**{len(passedlevels)}**", inline=True)
+			embed.add_field(name='🟥 Main:', value=f"**{main}**", inline=True)
+			embed.add_field(name='🟧 Extended:', value=f"**{len(passedlevels) - main - legacy}**", inline=True)
+			embed.add_field(name='🟩 Legacy:', value=f"**{legacy}**", inline=True)
+			embed.add_field(name='🃏 Хардест:',
+							value=f"**{passedlevels[0]['name']}** by **{passedlevels[0]['author']}**",
+							inline=False)
+			if len(passedlevelsf) < 999:
+				embed.add_field(name='📜 Пройденные уровни:', value=passedlevelsf, inline=False)
+				embed.set_footer(text="(C) Official Podpol'e Demonlist")
+
+			await inter.edit_original_message(embed=embed)
+			if len(passedlevels) >= 999:
+				embed2 = disnake.Embed(title="📜 Пройденные уровни:", description=passedlevelsf, colour=0x4ac4d4)
+				embed2.set_footer(text="(C) Official Podpol'e Demonlist")
+				await inter.edit_original_message(embed=embed2)
+		else:
+			await inter.edit_original_message(content="Такого игрока нет в топе!")
 	else:
-		print(error)
+		await inter.edit_original_message(content="Этот участник не привязан к демонлисту!")
 
 @client.slash_command(name='стата',
                    description='Показывет топ игроков Подполья относительно поинтов.',
 					options=[disnake.Option("страница", description="Номер страницы", required=False, type=disnake.OptionType.integer)])
 async def стата(inter, страница: int = 1):
+	await inter.response.defer()
 	leaderboard = calc_lb()
 	playersamount = len(leaderboard)
 	pages = ceil(playersamount / 10)
@@ -508,12 +523,13 @@ async def стата(inter, страница: int = 1):
 
 		await browse_pages(inter, страница, pages, embeds)
 	else:
-		await inter.response.send_message("На этой странице ещё нет уровней!")
+		await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 
 @client.slash_command(name='рулетка',
                    description='Начинает "рулетку" демонов. Пишите /хелп рулетка - чтобы научиться играть.',
-					options=[disnake.Option('рекорд', description="Указывайте здесь поставленный рекорд, а для сброса рулетки пишите 'сброс' (без кавычек).", required=False, type=disnake.OptionType.string)])
+					options=[disnake.Option('рекорд', description="Поставленный рекорд. Для сброса рулетки 'сброс', либо 'тек' для просмотра предыдущего рекорда.", required=False, type=disnake.OptionType.string)])
 async def рулетка(inter, рекорд = None):
+	await inter.response.defer()
 	if рекорд == None:
 		рекорд = 0
 	if mmbrs.find_one({"discordtag": inter.author.id}) is None:
@@ -522,23 +538,23 @@ async def рулетка(inter, рекорд = None):
 	roulettelvls = [i for i in mmbrs.find_one({"discordtag": inter.author.id})["roulettelvls"]]
 	if рекорд == "сброс":
 		if len(roulettelvls) == 0:
-			await inter.response.send_message("чо творишь")
+			await inter.edit_original_message(content="чо творишь")
 		else:
-			await inter.response.send_message(f"Ваша игра в рулетку завершается на {prevrecord}%, спустя {translator.translate(f'{len(roulettelvls)-1} progresses', dest='ru').text if len(roulettelvls) != 0 else '0 уровней =)'}. Вызовите еще раз команду чтоб начать игру!")
+			await inter.edit_original_message(content=f"Ваша игра в рулетку завершается на {prevrecord}%, спустя {translator.translate(f'{len(roulettelvls)-1} progresses', dest='ru').text if len(roulettelvls) != 0 else '0 уровней =)'}. Вызовите еще раз команду чтоб начать игру!")
 			mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif рекорд in ["текущий", "тек", "уровень", "лвл"]:
 		embed=disnake.Embed(title="Текущий уровень",
-							description=f"Уровень #{len(roulettelvls)}: **{roulettelvls[-1]['name']}** by **{roulettelvls[-1]['author']}**. Вам нужно поставить **{prevrecord+1}%**{' или больше.' if prevrecord != 99 else '.'}",
+							description=f"Уровень #{len(roulettelvls)}: **{roulettelvls[-1]['name']}** by **{roulettelvls[-1]['author']}** (Топ {roulettelvls[-1]['position']} в листе).\nВам нужно поставить **{prevrecord+1}%**{' или больше.' if prevrecord != 99 else '.'}",
 							colour=0x8533d6)
 		embed.set_footer(text="(C) Official Podpol'e Demonlist")
-		await inter.response.send_message(embed=embed)
+		await inter.edit_original_message(embed=embed)
 	elif int(рекорд) > 100 or (int(рекорд) > 0 and len(roulettelvls) == 0):
-		await inter.response.send_message("ты кому пиздиш падла")
+		await inter.edit_original_message(content="ты кому пиздиш падла")
 	elif int(рекорд) == 100:
-		await inter.response.send_message(f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text}. Вызовите еще раз команду чтобы начать игру!")
+		await inter.edit_original_message(content=f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text}. Вызовите еще раз команду чтобы начать игру!")
 		mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif int(рекорд) <= prevrecord and (int(рекорд) !=0 or len(roulettelvls)):
-		await inter.response.send_message(f"Указанный вами процент меньше или равен вашему предыдущему рекорду в {prevrecord}%!")
+		await inter.edit_original_message(content=f"Указанный вами процент меньше или равен вашему предыдущему рекорду в {prevrecord}%!")
 	else:
 		while True:
 			lvl = random.choice([i for i in deml.find()])
@@ -547,14 +563,15 @@ async def рулетка(inter, рекорд = None):
 		roulettelvls.append(lvl)
 		mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": int(рекорд), "roulettelvls": roulettelvls}})
 		embed=disnake.Embed(title="Рулетка подпольных уровней",
-							description=f"Уровень #{len(roulettelvls)}: **{lvl['name']}** by **{lvl['author']}**. Вам нужно поставить **{int(рекорд)+1}%**{' или больше.' if int(рекорд) != 99 else '.'}",
+							description=f"Уровень #{len(roulettelvls)}: **{lvl['name']}** by **{lvl['author']}** (Топ {lvl['position']} в листе).\nВам нужно поставить **{int(рекорд)+1}%**{' или больше.' if int(рекорд) != 99 else '.'}",
 							colour=disnake.Colour.random())
 		embed.set_footer(text="(C) Official Podpol'e Demonlist")
-		await inter.response.send_message(embed=embed)
+		await inter.edit_original_message(embed=embed)
 
 @client.slash_command(name='анекдот',
                    description='Выдаёт случайный анекдот с сайта anekdot.ru.')
 async def анекдот(inter):
+	await inter.response.defer()
 	parse = "https://www.anekdot.ru/random/anekdot"
 	headers = {
 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
@@ -568,22 +585,24 @@ async def анекдот(inter):
 	embed.set_author(name="Случайный анекдот", url=parse)
 	embed.set_footer(text=f"Дата: {date}. (C) Official Podpol'e Bot")
 
-	await inter.response.send_message(embed=embed)
+	await inter.edit_original_message(embed=embed)
 
 @client.slash_command(name='редис',
                    description='Выдаёт случайный редис из тех же Google картинок.')
 async def редис(inter):
+	await inter.response.defer()
 	redis = randimg(random.choice(["смешная редиска", "забавная редиска", "редиска", "редиска", "красная редиска"]))
 
 	embed = disnake.Embed(title="Случайный редисный", description=redis["title"], colour=disnake.Colour.random())
 	embed.set_image(url=redis["link"])
 	embed.set_footer(text=f"(C) Official Podpol'e Bot")
 
-	await inter.response.send_message(embed=embed)
+	await inter.edit_original_message(embed=embed)
 
 @client.slash_command(name='постирон',
                    description='Генератор очень смешной постиронии всем советую')
 async def постирон(inter):
+	await inter.response.defer()
 	if random.randint(1,5) != 1:
 		img = json.loads(requests.get(f"https://picsum.photos/id/{random.randint(0, 1050)}/info").text)["download_url"]
 	else:
@@ -602,30 +621,32 @@ async def постирон(inter):
 
 	dem = Demotivator(upper_text, lower_text)
 	dem.create(img, result_filename="postironiya.jpg", use_url=True, delete_file=True)
-	await inter.response.send_message(file=disnake.File('postironiya.jpg'))
+	await inter.edit_original_message(file=disnake.File('postironiya.jpg'))
 
 @client.slash_command(name='имг',
                    description='Выдаёт случайную картинку по запросу из Google картинок.',
 					options=[disnake.Option('запрос', description="Запрос, по которому нужно будет искать картинку.", required=True, type=disnake.OptionType.string)])
 async def имг(inter, *, запрос):
+	await inter.response.defer()
 	redis = randimg(запрос)
 
 	embed = disnake.Embed(title=f"Случайная картинка по запросу **{запрос}**", description=redis["title"], colour=disnake.Colour.random())
 	embed.set_image(url=redis["link"])
 	embed.set_footer(text=f"(C) Official Podpol'e Bot")
 
-	await inter.response.send_message(embed=embed)
+	await inter.edit_original_message(embed=embed)
 
 
 @client.slash_command(name='хелп',
                    description='Помощь по командам бота.',
 					options=[disnake.Option('страница', description="Номер страницы. Для просмотра помощи по рулетке, укажите здесь 'рулетка' (без кавычек).", required=False, type=disnake.OptionType.string)])
 async def хелп(inter, страница=None):
+	await inter.response.defer()
 	if страница in ["рулетка", "roulette", "r", "р"]:
-		embed1 = disnake.Embed(title='?рулетка <рекорд/"сброс">', description='Для того, чтобы начать рулетку, достаточно написать команду `?рулетка`, после чего бот отправит вам уровень, который вы должны будете пройти на 1% или более. Далее вам нужно будет прописать `?рулетка [поставленный вами рекорд]`, и, соответственно, на следующем выпавшем демоне вы уже должны будете поставить рекорд больше предыдущего хотя бы на 1%. Ровно такой же принцип действует и далее, пока вы не дойдете до значения 100.'
-																			  '\nТак же при желании начать игру с самого начала - вам стоит написать `?рулетка сброс`. Таким образом вы сбросите весь ваш прогресс и сможете начать игру по новой.', colour=0xff4747)
+		embed1 = disnake.Embed(title='/рулетка <рекорд/"сброс"/"тек">', description='`1.` Для того, чтобы начать рулетку, достаточно написать команду `/рулетка`, после чего бот отправит вам уровень, который вы должны будете пройти на 1% или более.\n`2.` Далее вам нужно будет прописать `/рулетка [поставленный вами рекорд]`, и, соответственно, на следующем выпавшем демоне вы уже должны будете поставить рекорд больше предыдущего хотя бы на 1%.\n`3.` Ровно такой же принцип действует и далее, пока вы не дойдете до значения 100.'
+																			  '\n\n**Для того, чтобы сбросить игру - напишите `/рулетка сброс`**\n**Для того, чтобы узнать текущий уровень, на котором вам нужно поставить прогресс - напишите `/рулетка текущий`**', colour=0xff4747)
 		embed1.set_footer(text=f"(C) Official Podpol'e Bot")
-		await inter.response.send_message(embed=embed1)
+		await inter.edit_original_message(embed=embed1)
 	elif страница in ["1", "2", None]:
 		if страница in ["1", "2"]:
 			страница = int(страница)
@@ -633,52 +654,53 @@ async def хелп(inter, страница=None):
 			страница = 1
 		embed1=disnake.Embed(title="📜 Демонлист", description="**P.s.:** [] - обязательный аргумент, <> - необязательный аргумент", colour=0xff4747)
 		embed1.set_author(name="Текущие команды:")
-		embed1.add_field(name="?dl <страница>",
+		embed1.add_field(name="/дл <страница>",
 						 value="```Показывает топ 100 сложнейших демонов, пройденных в Подполье.```",
 						 inline=True)
-		embed1.add_field(name="?стата <страница>",
+		embed1.add_field(name="/стата <страница>",
 						 value="```Показывет топ игроков Подполья относительно поинтов из демонлиста.```",
 						 inline=True)
-		embed1.add_field(name="?легаси <страница>",
+		embed1.add_field(name="/легаси <страница>",
 						 value="```Показывает топ уровней, вылетевших из основного топа 100 (сюда прохождения больше не принимаются).```",
 						 inline=True)
-		embed1.add_field(name="?профиль [ник в листе/тег игрока в дискорде]",
+		embed1.add_field(name="/профиль [ник в листе/тег игрока в дискорде]",
 						 value="```Показывает всю информацию об игроке в демонлисте (позицию в топе, все пройденные уровни, хардест демон и т.д.)```",
 						 inline=True)
-		embed1.add_field(name="?уровень [позиция в листе/название уровня]",
+		embed1.add_field(name="/уровень [позиция в листе/название уровня]",
 						 value="```Показывает всю информацию об уровне из демонлиста (позицию в топе, кол-во поинтов за прохождение и т.д.)```",
 						 inline=True)
-		embed1.add_field(name='?рулетка <рекорд/"сброс">',
-						 value=f'```Начинает так называемую "рулетку" демонов пройденных в Подполье. Чтобы узнать, как играть - пропишите \n/хелп ырулетка.```',
+		embed1.add_field(name='/рулетка <рекорд/"сброс"/"тек">',
+						 value=f'```Начинает так называемую "рулетку" демонов пройденных в Подполье. Чтобы узнать, как играть - пропишите \n/хелп рулетка.```',
 						 inline=True)
-		embed1.add_field(name='?длправила',
+		embed1.add_field(name='/длправила',
 						 value=f'```Показывает правила для попадания вашего прохождения в демонлист.```',
 						 inline=False)
 		embed1.set_footer(text=f"Страница 1/2. (C) Official Podpol'e Bot")
 
 		embed2 = disnake.Embed(title="😜 Приколы", description="**P.s.:** [] - обязательный аргумент, <> - необязательный аргумент", colour=0xff4747)
 		embed2.set_author(name="Текущие команды:")
-		embed2.add_field(name='?анекдот',
+		embed2.add_field(name='/анекдот',
 						 value=f'```Выдаёт случайный анекдот с сайта anekdot.ru.```',
 						 inline=True)
-		embed2.add_field(name='?имг [запрос]',
+		embed2.add_field(name='/имг [запрос]',
 						 value=f'```Выдаёт случайную картинку по запросу из Google картинок.```',
 						 inline=True)
-		embed2.add_field(name='?постирония',
+		embed2.add_field(name='/постирон',
 						 value=f'```Генератор очень смешной постиронии всем советую```',
 						 inline=True)
-		embed2.add_field(name='?редис',
+		embed2.add_field(name='/редис',
 						 value=f'```Выдаёт случайный редис из тех же Google картинок (да, для этого обязательно нужна отдельная команда).```',
 						 inline=True)
 		embed2.set_footer(text=f"Страница 2/2. (C) Official Podpol'e Bot")
 
 		await browse_pages(inter, страница, 2, [embed1,embed2], False)
 	else:
-		await inter.response.send_message("чо творишь")
+		await inter.edit_original_message(content="чо творишь")
 
 @client.slash_command(name='длправила',
                    description='Показывает правила для попадания вашего прохождения в демонлист.',)
 async def длправила(inter):
+	await inter.response.defer()
 	embed = disnake.Embed(title="📕 Правила демонлиста Подполья Гдшеров", colour=0xff4747)
 	embed.add_field(name="Правило 1.1", value="```Инсейн демоны и легче - по доверию, но пруфы лишними не будут. На экстрим демоны - видео с кликами. Но если вы не смогли записать ваше прохождение, то всё равно можете попасть в лист, если вы проверенный участник сервера или имеете запись с 55%+ .```", inline=False)
 	embed.add_field(name="Правило 1.2", value="```Если редактор демонлиста заподозрил что-либо неладное в пруфе прохождения - он в праве вас допросить, и в случае чего убрать ваши прохождения с демонлиста.```", inline=True)
@@ -686,6 +708,6 @@ async def длправила(inter):
 					value="```Если вы использовали различного рода сикрет веи и другие нечестные пути заполучить преимущество в сложности в уровне - ваше прохождение не будет добавлено в демонлист.```", inline=True)
 	embed.add_field(name="Правило 1.4", value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
 	embed.set_footer(text=f"(C) Official Podpol'e Bot")
-	await inter.response.send_message(embed=embed)
+	await inter.edit_original_message(embed=embed)
 
 client.run(token)
