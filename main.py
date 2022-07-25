@@ -599,30 +599,6 @@ async def редис(inter):
 
 	await inter.edit_original_message(embed=embed)
 
-@client.slash_command(name='постирон',
-                   description='Генератор очень смешной постиронии всем советую')
-async def постирон(inter):
-	await inter.response.defer()
-	if random.randint(1,5) != 1:
-		img = json.loads(requests.get(f"https://picsum.photos/id/{random.randint(0, 1050)}/info").text)["download_url"]
-	else:
-		img = json.loads(requests.get("https://foodish-api.herokuapp.com/api/").text)["image"]
-
-	text = json.loads(requests.get(f"https://fish-text.ru/get?&type=sentence&number=1").text)["text"]
-	a = 0
-	upper_text = ""
-	lower_text = ""
-	for i in text.split():
-		if a >= round(len(text.split()) / 2)-2:
-			lower_text = f"{lower_text}{i} "
-		else:
-			upper_text = f"{upper_text}{i} "
-		a += 1
-
-	dem = Demotivator(upper_text, lower_text)
-	dem.create(img, result_filename="postironiya.jpg", use_url=True, delete_file=True)
-	await inter.edit_original_message(file=disnake.File('postironiya.jpg'))
-
 @client.slash_command(name='имг',
                    description='Выдаёт случайную картинку по запросу из Google картинок.',
 					options=[disnake.Option('запрос', description="Запрос, по которому нужно будет искать картинку.", required=True, type=disnake.OptionType.string)])
