@@ -134,7 +134,7 @@ async def on_message(message):
 	gmobot = get(client.get_all_members(), id=993896677092106240)
 	if gmobot.mention in message.content:
 		await message.channel.send("<:VK_WTF:997209990278422598>")
-	if message.channel.id == 997430553403998309 and message.author.id != 993896677092106240:
+	if message.channel.id == 997728986807406652 and message.author.id != 993896677092106240:
 		if len(message.content) == 5 and message.content[2] == ".":
 			if brthds.find_one({"member": message.author.id}) is None:
 				brthds.insert_one(
@@ -155,8 +155,8 @@ async def on_message(message):
 @tasks.loop(seconds=60)
 async def checkday():
 	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
-	birthchannel = client.get_channel(997439439766814790)
-	chat = client.get_channel(884415899845668926)
+	birthchannel = client.get_channel(886678288704090193)
+	chat = client.get_channel(886680631239663707)
 
 	if moscow_time.hour >= 10:
 		for birth in brthds.find():
