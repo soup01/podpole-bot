@@ -153,7 +153,7 @@ async def checkday():
 			else:
 				brthds.update_one({"member": imeninnik.id}, {"$set": {"pozdravlen": False}})
 
-	if moscow_time.weekday() == 2 and not wkds.find_one({"pisya": True})["friday"]:
+	if moscow_time.weekday() == 0 and not wkds.find_one({"pisya": True})["friday"]:
 		await chat.send("УРА!!!!! ПЯТНИЦА!!!!!")
 		await chat.send(randimg("пятница открытки")["link"])
 		wkds.update_one({"pisya": True}, {"$set": {"friday": True}})
