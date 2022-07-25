@@ -134,6 +134,7 @@ async def on_message(message):
 				brthds.insert_one({"member": message.author.id, "day": int(message.content[:2]), "month": int(message.content[3:]), "pozdravlen": False})
 			else:
 				brthds.update_one({"member": message.author.id}, {"$set": {"day": int(message.content[:2]), "month": int(message.content[3:])}})
+			await message.channel.send("Дата дня рождения успешно добавлена!")
 	await client.process_commands(message)
 
 @tasks.loop(seconds = 60)
