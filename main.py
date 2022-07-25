@@ -153,11 +153,14 @@ async def checkday():
 			else:
 				brthds.update_one({"member": imeninnik.id}, {"$set": {"pozdravlen": False}})
 
-	if moscow_time.weekday() == 0 and not wkds.find_one({"pisya": True})["friday"]:
-		await chat.send("УРА!!!!! ПЯТНИЦА!!!!!")
-		await chat.send(randimg("пятница открытки")["link"])
-		wkds.update_one({"pisya": True}, {"$set": {"friday": True}})
-
+	if moscow_time.weekday() == 4:
+		if not wkds.find_one({"pisya": True})["friday"]:
+			await chat.send("УРА!!!!! ПЯТНИЦА!!!!!")
+			await chat.send(randimg("пятница открытки")["link"])
+			wkds.update_one({"pisya": True}, {"$set": {"friday": True}})
+	else:
+		wkds.update_one({"pisya": True}, {"$set": {"friday": False}})
+		
 @client.slash_command(name='дл',
                    description='Показывает топ 100 сложнейших демонов, пройденных в Подполье.',
 					options=[disnake.Option("страница", description="Номер страницы", required=False, type=disnake.OptionType.integer)])
