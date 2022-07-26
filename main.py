@@ -543,15 +543,16 @@ async def профиль(inter, игрок: disnake.User):
 			embed.add_field(name='🃏 Хардест:',
 							value=f"**{passedlevels[0]['name']}** by **{passedlevels[0]['author']}**",
 							inline=False)
+			print(len(passedlevelsf))
 			if len(passedlevelsf) < 999:
 				embed.add_field(name='📜 Пройденные уровни:', value=passedlevelsf, inline=False)
 				embed.set_footer(text="(C) Official Podpol'e Demonlist")
-
-			await inter.edit_original_message(embed=embed)
-			if len(passedlevels) >= 999:
+			msg = await inter.edit_original_message(embed=embed)
+			if len(passedlevelsf) >= 999:
+				print(msg)
 				embed2 = disnake.Embed(title="📜 Пройденные уровни:", description=passedlevelsf, colour=0x4ac4d4)
 				embed2.set_footer(text="(C) Official Podpol'e Demonlist")
-				await inter.edit_original_message(embed=embed2)
+				await msg.channel.send(embed=embed2)
 		else:
 			await inter.edit_original_message(content="Такого игрока нет в топе!")
 	else:
