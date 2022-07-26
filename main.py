@@ -373,7 +373,7 @@ async def delproof(ctx, pos: int, victor):
 				victors.pop(victors.index(vict))
 				victors.append([victor, None])
 				deml.update_one({"position": pos}, {"$set": {"victors": victors}})
-				await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} удалён ✅)
+				await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} удалён ✅")
 			else:
 				await ctx.send('У этого игрока итак не привязаны никакие пруфы к этому уровню ❌')
 		else:
