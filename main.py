@@ -124,9 +124,9 @@ def gk(d):
 
 @client.event
 async def on_ready():
-	print("Бот запущен!")
-	plrs.update_many({}, {"$unset": {"curpercent": 1, "roulettelvls": 1}})
 	checkday.start()
+	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
+	print("Бот запущен!")
 
 
 @client.event
@@ -208,7 +208,7 @@ async def дл(inter, страница: int = 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
 						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}"<:GD_STAR:997218626006425690>"\n""",
-						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
@@ -236,7 +236,7 @@ async def легаси(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}**\n""",
-									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 									inline=False)
 				embed.set_footer(text=f"Страница {page - 10}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
@@ -295,7 +295,8 @@ async def addvictor(ctx, pos: int, victor, video=None):
 		if victor.lower() not in [i[0].lower() for i in victors]:
 			victors.append([victor, video])
 			deml.update_one({"position": pos}, {"$set": {"victors": victors}})
-			plrs.insert_one({"nick": victor, "discordtag": None, "curpercent": 0, "roulettelvls": []})
+			if plrs.find_one({"nick": victor}) is None:
+				plrs.insert_one({"nick": victor, "discordtag": None})
 			await ctx.send(f"{victor} добавлен к викторам {lvl['name']}.")
 		else:
 			await ctx.send(f"{victor} уже является виктором уровня {lvl['name']}!")
@@ -491,22 +492,30 @@ async def уровень(inter, *, уровень=None):
 					  description='Показывает всю информацию об игроке в демонлисте.',
 					  options=[disnake.Option("игрок",
 											  description="Можно указать как и тег игрока в дискорде, так и его ник в листе",
-											  required=True)])
-async def профиль(inter, игрок: disnake.User):
+											  required=False)])
+async def профиль(inter, игрок: disnake.User = None):
 	await inter.response.defer()
-
-	# говнокод космических масштабов
-	try:
-		player = await converter.convert(inter, игрок[3:-1])
-	except:
-		try:
-			player = await converter.convert(inter, игрок)
-		except:
-			player = игрок
-	if player != игрок:
-		player = plrs.find_one({"discordtag": player.id})
+	chzh = False
+	if игрок == None:
+		player = plrs.find_one({"discordtag": inter.author.id})
 		if player is not None:
 			player = player["nick"]
+		else:
+			player = None
+			chzh = True
+	else:
+		# говнокод космических масштабов
+		try:
+			player = await converter.convert(inter, игрок[3:-1])
+		except:
+			try:
+				player = await converter.convert(inter, игрок)
+			except:
+				player = игрок
+		if player != игрок:
+			player = plrs.find_one({"discordtag": player.id})
+			if player is not None:
+				player = player["nick"]
 
 	if player is not None:
 		passedlevels = get_passed_levels(player)
@@ -521,12 +530,12 @@ async def профиль(inter, игрок: disnake.User):
 			passedlevelsf = list()
 			for lvl in passedlevels:
 				if lvl["position"] <= 50:
-					passedlevelsf.append(f"**[{lvl['name']}]({lvl['proof']})**")
+					passedlevelsf.append(f"**[{lvl['name']}]({lvl['proof']})**" if lvl['proof'] != None else f"**{lvl['name']}**")
 					main += 1
 				elif lvl["position"] <= 100:
-					passedlevelsf.append(f"[{lvl['name']}]({lvl['proof']})")
+					passedlevelsf.append(f"[{lvl['name']}]({lvl['proof']})" if lvl['proof'] != None else lvl['name'])
 				else:
-					passedlevelsf.append(f"*[{lvl['name']}]({lvl['proof']})*")
+					passedlevelsf.append(f"*[{lvl['name']}]({lvl['proof']})*" if lvl['proof'] != None else f"*{lvl['name']}*")
 					legacy += 1
 			passedlevelsf = ", ".join(passedlevelsf)
 
@@ -554,7 +563,10 @@ async def профиль(inter, игрок: disnake.User):
 				embed2.set_footer(text="(C) Official Podpol'e Demonlist")
 				await msg.channel.send(embed=embed2)
 		else:
-			await inter.edit_original_message(content="Такого игрока нет в топе!")
+			if chzh:
+				await inter.edit_original_message(content="Ваш аккаунт в дискорде не привязан к профилю в демонлисте!")
+			else:
+				await inter.edit_original_message(content="Такого игрока нет в топе!")
 	else:
 		await inter.edit_original_message(content="Этот участник не привязан к демонлисту!")
 
@@ -721,7 +733,7 @@ async def хелп(inter, страница=None):
 		embed1.add_field(name="/легаси <страница>",
 						 value="```Показывает топ уровней, вылетевших из основного топа 100 (сюда прохождения больше не принимаются).```",
 						 inline=True)
-		embed1.add_field(name="/профиль [ник в листе/тег игрока в дискорде]",
+		embed1.add_field(name="/профиль <ник в листе/тег игрока в дискорде>",
 						 value="```Показывает всю информацию об игроке в демонлисте (позицию в топе, все пройденные уровни, хардест демон и т.д.)```",
 						 inline=True)
 		embed1.add_field(name="/уровень [позиция в листе/название уровня]",
