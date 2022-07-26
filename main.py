@@ -194,7 +194,7 @@ async def checkday():
 async def дл(inter, страница: int = 1):
 	await inter.response.defer()
 	if random.randint(1, 10) == 1:
-		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ 👯‍♂️")
+		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
 	else:
 		lvlsamount = len([lvl for lvl in deml.find()])
 		pages = ceil(lvlsamount / 10) if lvlsamount <= 100 else 10
@@ -208,14 +208,14 @@ async def дл(inter, страница: int = 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
 						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}"<:GD_STAR:997218626006425690>"\n""",
-						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else f'**{vic[0]}**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
 
 			await browse_pages(inter, страница, pages, embeds)
 		else:
-			await inter.edit_original_message(content="На этой странице ещё нет уровней ❌")
+			await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 
 
 @client.slash_command(name='легаси',
@@ -236,16 +236,16 @@ async def легаси(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}**\n""",
-									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else f'**{vic[0]}**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 									inline=False)
 				embed.set_footer(text=f"Страница {page - 10}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
 
 			await browse_pages(inter, страница, pages, embeds)
 		else:
-			await inter.edit_original_message(content="На этой странице ещё нет уровней ❌")
+			await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 	else:
-		await inter.edit_original_message(content="мужик легаси не существует ❌")
+		await inter.edit_original_message(content="мужик легаси не существует")
 
 
 # ГОТОВО
@@ -259,16 +259,16 @@ async def addlevel(ctx, lvlname, lvlauthor, pos: int):
 		deml.insert_one({"name": lvlname, "author": lvlauthor, "victors": [], "position": int(pos)})
 		if pos == 1:
 			await ctx.send(
-				f"{lvlname} добавлен на {pos} позицию, сместив при этом {deml.find_one({'position': pos + 1})['name']} на вторую строчку листа ✅")
+				f"{lvlname} добавлен на {pos} позицию, сместив при этом {deml.find_one({'position': pos + 1})['name']} на вторую строчку листа!")
 		elif pos == lvlsamount + 1:
 			await ctx.send(
-				f"{lvlname} добавлен на {pos} позицию, то есть на последнюю, ничего при этом не обогнав и не сместив 😜")
+				f"{lvlname} добавлен на {pos} позицию, то есть на последнюю, ничего при этом не обогнав и не сместив :(")
 		else:
 			await ctx.send(
-				f"{lvlname} добавлен на {pos} позицию, выше {deml.find_one({'position': pos + 1})['name']}, но ниже {deml.find_one({'position': pos - 1})['name']} ✅")
+				f"{lvlname} добавлен на {pos} позицию, выше {deml.find_one({'position': pos + 1})['name']}, но ниже {deml.find_one({'position': pos - 1})['name']}!")
 	else:
 		await ctx.send(
-			f'Мужик, ты чего? В демонлисте пока что всего {lvlsamount} уровней, а ты собрался на {pos} место что-то ставить. Подумай об этом на досуге ❌')
+			f'Мужик, ты чего? В демонлисте пока что всего {lvlsamount} уровней, а ты собрался на {pos} место что-то ставить. Подумай об этом на досуге.')
 
 
 # ГОТОВО
@@ -280,10 +280,14 @@ async def dellevel(ctx, pos: int):
 		deml.delete_one({"position": pos})
 		for name in [i["name"] for i in deml.find() if i["position"] > pos]:
 			deml.update_one({"name": name}, {"$inc": {"position": -1}})
-		await ctx.send(f"{lvl['name']} удалён. GG ✅")
+		await ctx.send(f"{lvl['name']} удалён. GG.")
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
+# ГОТОВО
+@client.command(aliases=['furry'])
+async def фурри(ctx):
+	await ctx.send(file=disnake.File('vjlink.gif'))
 
 # ГОТОВО
 @client.command(aliases=['victor', 'виктор', 'добавитьвиктора'])
@@ -297,11 +301,11 @@ async def addvictor(ctx, pos: int, victor, video=None):
 			deml.update_one({"position": pos}, {"$set": {"victors": victors}})
 			if plrs.find_one({"nick": victor}) is None:
 				plrs.insert_one({"nick": victor, "discordtag": None})
-			await ctx.send(f"{victor} добавлен к викторам {lvl['name']} ✅")
+			await ctx.send(f"{victor} добавлен к викторам {lvl['name']}.")
 		else:
-			await ctx.send(f"{victor} уже является виктором уровня {lvl['name']} ❌")
+			await ctx.send(f"{victor} уже является виктором уровня {lvl['name']}!")
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
 
 # ГОТОВО
@@ -321,7 +325,7 @@ async def delvictor(ctx, pos: int, vctr):
 				deml.update_one({"position": lvl["position"]}, {"$set": {"victors": victors}})
 				break
 
-		await ctx.send(f"{realname} удалён из викторов {lvl['name']} ✅")
+		await ctx.send(f"{realname} удалён из викторов {lvl['name']}.")
 
 		a = 0
 		for l in deml.find():
@@ -332,7 +336,7 @@ async def delvictor(ctx, pos: int, vctr):
 		if a == 0:
 			plrs.delete_one({"nick": realname})
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
 
 # ГОТОВО
@@ -349,11 +353,11 @@ async def addproof(ctx, pos: int, victor, video):
 			victors.pop(victors.index(vict))
 			victors.append([victor, video])
 			deml.update_one({"position": pos}, {"$set": {"victors": victors}})
-			await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} успешно добавлен ✅")
+			await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} успешно добавлен.")
 		else:
-			await ctx.send('Данный игрок не является виктором этого уровня ❌')
+			await ctx.send('Данный игрок не является виктором этого уровня.')
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
 
 # ГОТОВО
@@ -373,13 +377,13 @@ async def delproof(ctx, pos: int, victor):
 				victors.pop(victors.index(vict))
 				victors.append([victor, None])
 				deml.update_one({"position": pos}, {"$set": {"victors": victors}})
-				await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} удалён ✅")
+				await ctx.send(f"Пруф игрока {vict[0]} на уровень {lvl['name']} удалён.")
 			else:
-				await ctx.send('У этого игрока итак не привязаны никакие пруфы к этому уровню ❌')
+				await ctx.send('У этого игрока итак не привязаны никакие пруфы к этому уровню.')
 		else:
-			await ctx.send('Данный игрок не является виктором этого уровня ❌')
+			await ctx.send('Данный игрок не является виктором этого уровня.')
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
 
 # ГОТОВО
@@ -390,6 +394,7 @@ async def edit(ctx, pos: int, new_pos: int):
 	swapped_lvl = deml.find_one({"position": new_pos})
 	if lvl is not None:
 		if pos != new_pos:
+
 			if pos > new_pos:
 				for name in [i["name"] for i in deml.find() if i["position"] < pos and i["position"] >= new_pos]:
 					deml.update_one({"name": name}, {"$inc": {"position": 1}})
@@ -397,11 +402,11 @@ async def edit(ctx, pos: int, new_pos: int):
 				for name in [i["name"] for i in deml.find() if i["position"] > pos and i["position"] <= new_pos]:
 					deml.update_one({"name": name}, {"$inc": {"position": -1}})
 			deml.update_one({"name": lvl["name"]}, {"$set": {"position": new_pos}})
-			await ctx.send(f'Уровень {lvl["name"]} успешно перенесён на позицию {new_pos} с позиции {pos} ✅')
+			await ctx.send(f'Уровень {lvl["name"]} перенесён на позицию {new_pos} с позиции {pos}!')
 		else:
-			await ctx.send('чо творишь')
+			await ctx.send('Чо творишь')
 	else:
-		await ctx.send('Такого уровня не существует ❌')
+		await ctx.send('Такого уровня не существует!')
 
 
 # ГОТОВО
@@ -423,9 +428,9 @@ async def dlban(ctx, player):
 				break
 	if isplayerexists:
 		plrs.delete_one({"nick": realname})
-		await ctx.send(f'{realname} был полностью уничтожен (💥) в демонлисте ✅')
+		await ctx.send(f'{realname} был полностью уничтожен в демонлисте!')
 	else:
-		await ctx.send('Такого игрока нет в демонлисте ❌')
+		await ctx.send('Такого игрока нет в демонлисте!')
 
 
 @client.command(aliases=['привязать'])
@@ -437,11 +442,11 @@ async def connect(ctx, player, member: disnake.Member):
 		realname = realname[0]
 		if len([i for i in plrs.find({"nick": realname})]) == 1:
 			plrs.update_one({"nick": realname}, {"$set": {"discordtag": member.id}})
-			await ctx.send(f"{member.display_name} успешно привязан к своему профилю в демонлисте ✅")
+			await ctx.send(f"{member.display_name} успешно привязан к своему профилю в демонлисте.")
 		else:
-			await ctx.send(f"{member.display_name} уже привязан к демомнлисту ❌")
+			await ctx.send(f"{member.display_name} уже привязан к демомнлисту.")
 	else:
-		await ctx.send("Такого игрока нет в демонлисте ❌")
+		await ctx.send("Такого игрока нет в демонлисте!")
 
 
 @client.command(aliases=['отвязать'])
@@ -450,9 +455,9 @@ async def disconnect(ctx, member: disnake.Member):
 	player = plrs.find_one({"discordtag": member.id})
 	if player != None:
 		plrs.update_one({"nick": player["nick"]}, {"$set": {"discordtag": None}})
-		await ctx.send(f"{member.display_name} успешно отвязан от демонлиста ✅")
+		await ctx.send(f"{member.display_name} успешно отвязан от демонлиста.")
 	else:
-		await ctx.send(f"Участник {member.display_name} не привязан к демонлисту ❌")
+		await ctx.send(f"Участник {member.display_name} не привязан к демонлисту!")
 
 
 @client.slash_command(name='уровень',
@@ -477,7 +482,7 @@ async def уровень(inter, *, уровень=None):
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):',
-							value=', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else f'**{vic[0]}**' for vic in lvl['victors']]) if len(
+							value=', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(
 								lvl['victors']) != 0 else 'нет', inline=False)
 			embed.set_footer(text="(C) Official Podpol'e Demonlist")
 			await inter.edit_original_message(embed=embed)
@@ -563,11 +568,11 @@ async def профиль(inter, игрок: disnake.User = None):
 				await msg.channel.send(embed=embed2)
 		else:
 			if chzh:
-				await inter.edit_original_message(content="Ваш аккаунт в дискорде не привязан к профилю в демонлисте ❌")
+				await inter.edit_original_message(content="Ваш аккаунт в дискорде не привязан к профилю в демонлисте!")
 			else:
-				await inter.edit_original_message(content="Такого игрока нет в топе ❌")
+				await inter.edit_original_message(content="Такого игрока нет в топе!")
 	else:
-		await inter.edit_original_message(content="Этот участник не привязан к демонлисту ❌")
+		await inter.edit_original_message(content="Этот участник не привязан к демонлисту!")
 
 
 @client.slash_command(name='стата',
@@ -598,7 +603,7 @@ async def стата(inter, страница: int = 1):
 
 		await browse_pages(inter, страница, pages, embeds)
 	else:
-		await inter.edit_original_message(content="На этой странице ещё нет уровней ❌")
+		await inter.edit_original_message(content="На этой странице ещё нет уровней!")
 
 
 @client.slash_command(name='рулетка',
@@ -635,7 +640,7 @@ async def рулетка(inter, рекорд=None):
 		mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif int(рекорд) <= prevrecord and (int(рекорд) != 0 or len(roulettelvls)):
 		await inter.edit_original_message(
-			content=f"Указанный вами процент меньше или равен вашему предыдущему рекорду в {prevrecord}% ❌")
+			content=f"Указанный вами процент меньше или равен вашему предыдущему рекорду в {prevrecord}%!")
 	else:
 		while True:
 			lvl = random.choice([i for i in deml.find()])
