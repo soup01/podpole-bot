@@ -438,7 +438,7 @@ async def dlban(ctx, player):
 				break
 	if isplayerexists:
 		plrs.delete_one({"nick": realname})
-		await ctx.send(f'{realname} был полностью уничтожен (💥) в демонлисте ✅')
+		await ctx.send(f'{realname} был полностью уничтожен в демонлисте ✅')
 	else:
 		await ctx.send('Такого игрока нет в демонлисте ❌')
 
