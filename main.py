@@ -68,7 +68,7 @@ async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 
 		while True:
 			try:
-				reaction, user = await client.wait_for('reaction_add', timeout=30.0,
+				reaction, user = await client.wait_for('reaction_add', timeout=60.0,
 													   check=lambda reaction, user: user == ctx.author and str(
 														   reaction.emoji) in reactionslist)
 			except asyncio.TimeoutError:
