@@ -234,7 +234,6 @@ async def дл(inter, страница: int = 1):
 async def легаси(inter, страница: int = 1):
 	await inter.response.defer()
 	emojis = {e.name: str(e) for e in inter.client.emojis}
-	print(emojis)
 	lvlsamount = len([lvl for lvl in deml.find()])
 	if lvlsamount > 100:
 		pages = ceil((lvlsamount - 100) / 10)
@@ -358,7 +357,6 @@ async def addproof(ctx, pos: int, victor, video):
 	if lvl is not None:
 		victors = lvl["victors"]
 		vict = [vic for vic in victors if vic[0].lower() == victor.lower()]
-		print(vict)
 		if len(vict) > 0:
 			vict = vict[0]
 			victors.pop(victors.index(vict))
@@ -379,11 +377,8 @@ async def delproof(ctx, pos: int, victor):
 	if lvl is not None:
 		victors = lvl["victors"]
 		vict = [vic for vic in victors if vic[0].lower() == victor.lower()]
-		print(vict)
 		if len(vict) > 0:
 			vict = vict[0]
-			print(victors)
-			print(vict)
 			if vict[1] is not None:
 				victors.pop(victors.index(vict))
 				victors.append([victor, None])
@@ -572,13 +567,11 @@ async def профиль(inter, игрок: disnake.User = None):
 			embed.add_field(name='🃏 Хардест:',
 							value=f"**{passedlevels[0]['name']}** by **{passedlevels[0]['author']}**",
 							inline=False)
-			print(len(passedlevelsf))
 			if len(passedlevelsf) < 999:
 				embed.add_field(name='📜 Пройденные уровни:', value=passedlevelsf, inline=False)
 				embed.set_footer(text="(C) Official Podpol'e Demonlist")
 			msg = await inter.edit_original_message(embed=embed)
 			if len(passedlevelsf) >= 999:
-				print(msg)
 				embed2 = disnake.Embed(title="📜 Пройденные уровни:", description=passedlevelsf, colour=0x4ac4d4)
 				embed2.set_footer(text="(C) Official Podpol'e Demonlist")
 				await msg.channel.send(embed=embed2)
