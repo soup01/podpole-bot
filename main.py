@@ -132,8 +132,9 @@ async def on_ready():
 @client.event
 async def on_message(message):
 	gmobot = get(client.get_all_members(), id=993896677092106240)
+	emojis = {e.name: str(e) for e in client.emojis}
 	if gmobot.mention in message.content:
-		await message.channel.send("<:VK_WTF:997209990278422598>")
+		await message.channel.send(emojis["VK_WTF"])
 	if message.channel.id == 997728986807406652 and message.author.id != 993896677092106240:
 		if len(message.content) == 5 and message.content[2] == ".":
 			if brthds.find_one({"member": message.author.id}) is None:
@@ -154,6 +155,7 @@ async def on_message(message):
 
 @tasks.loop(seconds=60)
 async def checkday():
+	print("cycle")
 	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
 	birthchannel = client.get_channel(886678288704090193)
 	chat = client.get_channel(886680631239663707)
@@ -199,6 +201,7 @@ async def checkday():
 											  type=disnake.OptionType.integer)])
 async def дл(inter, страница: int = 1):
 	await inter.response.defer()
+	emojis = {e.name: str(e) for e in inter.client.emojis}
 	if random.randint(1, 10) == 1:
 		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
 	else:
@@ -213,7 +216,7 @@ async def дл(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
-						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}"<:GD_STAR:997218626006425690>"\n""",
+						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}{emojis['GD_STAR']}\n""",
 						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
@@ -230,6 +233,8 @@ async def дл(inter, страница: int = 1):
 											  type=disnake.OptionType.integer)])
 async def легаси(inter, страница: int = 1):
 	await inter.response.defer()
+	emojis = {e.name: str(e) for e in inter.client.emojis}
+	print(emojis)
 	lvlsamount = len([lvl for lvl in deml.find()])
 	if lvlsamount > 100:
 		pages = ceil((lvlsamount - 100) / 10)
@@ -237,7 +242,7 @@ async def легаси(inter, страница: int = 1):
 			embeds = list()
 			for page in range(11, pages + 11):
 				embed = disnake.Embed(title="Офицальный топ игроков Подполья", colour=0x766ce5,
-									  description="*За каждый уровень из легаси даётся 3*<:GD_STAR:997218626006425690>\n*Прохождения сюда больше не принимаются.*\n**Место | Название | Автор**")
+									  description=f"*За каждый уровень из легаси даётся 3*{emojis['GD_STAR']}\n*Прохождения сюда больше не принимаются.*\n**Место | Название | Автор**")
 				for i in range(10 * (page - 1) + 1, (page * 10 if lvlsamount > 10 and (
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
@@ -509,6 +514,7 @@ async def уровень(inter, *, уровень=None):
 											  required=False)])
 async def профиль(inter, игрок: disnake.User = None):
 	await inter.response.defer()
+	emojis = {e.name: str(e) for e in inter.client.emojis}
 	chzh = False
 	if игрок == None:
 		player = plrs.find_one({"discordtag": inter.author.id})
@@ -558,7 +564,7 @@ async def профиль(inter, игрок: disnake.User = None):
 			embed.add_field(name='📊 Место в топе:', value=f"**#{gk(leaderboardlower).index(player) + 1}**",
 							inline=True)
 			embed.add_field(name='📈 Поинтов:',
-							value=f"**{round(leaderboardlower[player], 1)}**<:GD_STAR:997218626006425690>", inline=True)
+							value=f"**{round(leaderboardlower[player], 1)}**{emojis['GD_STAR']}", inline=True)
 			embed.add_field(name='🧮 Пройдено уровней:', value=f"**{len(passedlevels)}**", inline=True)
 			embed.add_field(name='🟥 Main:', value=f"**{main}**", inline=True)
 			embed.add_field(name='🟧 Extended:', value=f"**{len(passedlevels) - main - legacy}**", inline=True)
@@ -591,6 +597,7 @@ async def профиль(inter, игрок: disnake.User = None):
 											  type=disnake.OptionType.integer)])
 async def стата(inter, страница: int = 1):
 	await inter.response.defer()
+	emojis = {e.name: str(e) for e in inter.client.emojis}
 	leaderboard = calc_lb()
 	playersamount = len(leaderboard)
 	pages = ceil(playersamount / 10)
@@ -605,7 +612,7 @@ async def стата(inter, страница: int = 1):
 								   playersamount - (page - 1) * 10) >= 10 else playersamount) + 1):
 				passedlevels = get_passed_levels(victors[i - 1])
 				places.append(
-					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}p | {len(passedlevels)} <:GD_DEMON:997529124656664697>")
+					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}p | {len(passedlevels)} {emojis['GD_DEMON']}")
 			embed = disnake.Embed(title="Офицальный топ игроков Подполья", description="\n\n".join(places),
 								  colour=0x766ce5)
 			embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
