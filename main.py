@@ -425,6 +425,10 @@ async def dlban(ctx, player):
 				realname = victor[0]
 				victors.pop(a)
 				deml.update_one({"position": lvl["position"]}, {"$set": {"victors": victors}})
+				if len(deml.find_one({"position": lvl["position"]})["victors"]) == 0:
+					deml.delete_one({"position": lvl["position"]})
+					for name in [i["name"] for i in deml.find() if i["position"] > lvl["position"]]:
+						deml.update_one({"name": name}, {"$inc": {"position": -1}})
 				break
 	if isplayerexists:
 		plrs.delete_one({"nick": realname})
