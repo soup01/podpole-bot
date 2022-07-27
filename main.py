@@ -593,7 +593,7 @@ async def стата(inter, страница: int = 1):
 			for i in range(10 * (page - 1) + 1,
 						   (page * 10 if playersamount > 10 and (
 								   playersamount - (page - 1) * 10) >= 10 else playersamount) + 1):
-				passedlevels = get_passed_levels(victors[i - 1])[0]
+				passedlevels = get_passed_levels(victors[i - 1])
 				places.append(
 					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}p | {len(passedlevels)} <:GD_DEMON:997529124656664697>")
 			embed = disnake.Embed(title="Офицальный топ игроков Подполья", description="\n\n".join(places),
@@ -624,7 +624,7 @@ async def рулетка(inter, рекорд=None):
 			await inter.edit_original_message(content="чо творишь")
 		else:
 			await inter.edit_original_message(
-				content=f"Ваша игра в рулетку завершается на {prevrecord}%, спустя {translator.translate(f'{len(roulettelvls) - 1} progresses', dest='ru').text if len(roulettelvls) > 1 else '0 уровней =)'}. Вызовите еще раз команду чтоб начать игру!")
+				content=f"Ваша игра в рулетку завершается на {prevrecord}%, спустя {translator.translate(f'{len(roulettelvls) - 1} progresses', dest='ru').text if len(roulettelvls) > 1 else '0 прогрессов =)'}. Вызовите еще раз команду чтоб начать игру!")
 			mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif рекорд in ["текущий", "тек", "уровень", "лвл"]:
 		embed = disnake.Embed(title="Текущий уровень",
@@ -636,7 +636,7 @@ async def рулетка(inter, рекорд=None):
 		await inter.edit_original_message(content="ты кому пиздиш падла")
 	elif int(рекорд) == 100:
 		await inter.edit_original_message(
-			content=f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text if len(roulettelvls) > 1 else '0 уровней =)'}. Вызовите еще раз команду чтобы начать игру!")
+			content=f"Вы прошли рулетку демонов! Поздравляю! Всего на вашем пути был{'о' if len(roulettelvls) > 1 else ''} {translator.translate(f'{len(roulettelvls)} levels', dest='ru').text if len(roulettelvls) > 0 else '0 уровней =)'}. Вызовите еще раз команду чтобы начать игру!")
 		mmbrs.update_one({"discordtag": inter.author.id}, {"$set": {"curpercent": 0, "roulettelvls": []}})
 	elif int(рекорд) <= prevrecord and (int(рекорд) != 0 or len(roulettelvls)):
 		await inter.edit_original_message(
@@ -787,7 +787,7 @@ async def длправила(inter):
 					inline=True)
 	embed.add_field(name="Правило 1.4",
 					value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
-	embed.set_footer(text=f"(C) Official Podpol'e Bot")
+	embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
 	await inter.edit_original_message(embed=embed)
 
 
