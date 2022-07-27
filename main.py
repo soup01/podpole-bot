@@ -34,7 +34,7 @@ mmbrs = cluster["GMDOBOT"]["members"]
 brthds = cluster["GMDOBOT"]["birthdays"]
 wkds = cluster["GMDOBOT"]["weekdays"]
 
-editor = 994898808322412555
+editor = 927634802096611469
 translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
