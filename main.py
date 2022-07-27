@@ -157,10 +157,13 @@ async def checkday():
 	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
 	birthchannel = client.get_channel(886678288704090193)
 	chat = client.get_channel(886680631239663707)
+	guild = client.get_guild(886678201387073607)
+	imeninnikrole = get(guild.roles, id=1001748951529164810)
 
-	if moscow_time.hour >= 10:
+	if moscow_time.hour >= 7:
 		for birth in brthds.find():
-			imeninnik = await client.fetch_user(birth["member"])
+			imenin = await client.fetch_user(birth["member"])
+			imeninnik = guild.get_member(imenin.id)
 			if birth["day"] == moscow_time.day and birth["month"] == moscow_time.month:
 				if not birth["pozdravlen"]:
 					parse = "https://pozdraff.ru/pozdravleniya/5?for=man&count=2"
@@ -173,10 +176,13 @@ async def checkday():
 
 					embed = disnake.Embed(colour=0xfff94a)
 					embed.set_image(randimg("открытки с днём рождения забавные")["link"])
-					await birthchannel.send(f"У {imeninnik.mention} сегодня день рождения! ПОЗДРАВЛЯЕМ! 🎉🎊\n{pozdravlenie}", embed=embed)
-					brthds.update_one({"member": imeninnik.id}, {"$set": {"pozdravlen": True}})
+
+					await birthchannel.send(f"У {imenin.mention} сегодня день рождения! ПОЗДРАВЛЯЕМ! 🎉🎊\n{pozdravlenie}", embed=embed)
+					await imeninnik.add_roles(imeninnikrole)
+					brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": True}})
 			else:
-				brthds.update_one({"member": imeninnik.id}, {"$set": {"pozdravlen": False}})
+				brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": False}})
+				await imeninnik.remove_roles(imeninnikrole)
 
 	if moscow_time.weekday() == 4:
 		if not wkds.find_one({"pisya": True})["friday"]:
