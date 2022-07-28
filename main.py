@@ -605,7 +605,7 @@ async def стата(inter, страница: int = 1):
 								   playersamount - (page - 1) * 10) >= 10 else playersamount) + 1):
 				passedlevels = get_passed_levels(victors[i - 1])
 				places.append(
-					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}p | {len(passedlevels)} {emojis['GD_DEMON']}")
+					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}{emojis['GD_STAR']} | {len(passedlevels)} {emojis['GD_DEMON']}")
 			embed = disnake.Embed(title="Офицальный топ игроков Подполья", description="\n\n".join(places),
 								  colour=0x766ce5)
 			embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
