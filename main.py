@@ -107,7 +107,7 @@ def calc_lb():
 			for item in pcks.find():
 				passedlevels = [i["name"] for i in get_passed_levels(victor)]
 				if len(item["levels"]) == len(list(filter(lambda i: i in passedlevels, item["levels"]))):
-					victors["victor"] += item["points"]
+					victors[victor] += item["points"]
 	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 def randimg(search):
