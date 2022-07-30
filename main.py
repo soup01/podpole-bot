@@ -103,21 +103,11 @@ def calc_lb():
 			else:
 				victors[victor[0]] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
 	for victor in victors:
-		print(victor)
 		if victors[victor] >= 9:
 			for item in pcks.find():
-				print(item)
-				j = 0
-				for level in item["levels"]:
-					print(victor)
-					print([i[0] for i in deml.find_one({"name": level})["victors"]])
-					if victor in [i[0] for i in deml.find_one({"name": level})["victors"]]:
-						j+=1
-					else:
-						break
-				if j==len(item["levels"]):
-					print("АЗДЦклпцл")
-					victors[victor] += item["points"]
+				passedlevels = [i["name"] for i in get_passed_levels(victor)]
+				if len(item["levels"]) == len(list(filter(lambda i: i in passedlevels, item["levels"]))):
+					victors["victor"] += item["points"]
 	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 def randimg(search):
@@ -532,7 +522,8 @@ async def уровень(inter, *, уровень=None):
 				lvl = None
 
 		if lvl is not None:
-			embed = disnake.Embed(title=lvl['name'] + {f'({points[lvl["position"] -1]}{emojis["GD_STAR"]})' if lvl["position"] <= 100 else ''}, colour=0x6ad96e)
+			print(lvl["position"])
+			embed = disnake.Embed(title=lvl['name'] + f' ({points[lvl["position"] -1]}{emojis["GD_STAR"]})' if lvl["position"] <= 100 else lvl['name'] + f' (3 {emojis["GD_STAR"]})', colour=0x6ad96e)
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):',
