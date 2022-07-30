@@ -163,7 +163,6 @@ async def on_message(message):
 
 @tasks.loop(seconds=60)
 async def checkday():
-	print("cycle")
 	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
 	birthchannel = client.get_channel(886678288704090193)
 	chat = client.get_channel(886680631239663707)
@@ -489,7 +488,6 @@ async def паки(inter):
 			item = pcks.find_one({"id": j})
 			passedlevels.extend([i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]])
 		embed = disnake.Embed(title="Демон-паки", description=f"Пока что вы прошли всего **{translator.translate(f'{len(passedlevels)} levels', dest='ru').text if len(passedlevels) > 0 else '0 уровней'}** из паков.\n`P.S.` ***Название уровня жирным шрифтом*** - пройденный вами уровень.", colour=0x766ce5)
-		print(passedlevels)
 		for j in range(len([q for q in pcks.find()])):
 			item = pcks.find_one({"id": j})
 			if player != None:
@@ -625,7 +623,6 @@ async def профиль(inter, игрок: disnake.User = None):
 											  type=disnake.OptionType.integer)])
 async def стата(inter, страница: int = 1):
 	await inter.response.defer()
-	print("fgf")
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	leaderboard = calc_lb()
 	playersamount = len(leaderboard)
