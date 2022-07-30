@@ -142,7 +142,7 @@ def gk(d):
 async def on_ready():
 	global gmdoguild
 	checkday.start()
-	gmdoguild = client.get_guild(884415899057160192)
+	gmdoguild = client.get_guild(886678201387073607)
 	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
 	print("Бот запущен!")
 
