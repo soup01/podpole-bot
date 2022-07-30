@@ -491,7 +491,7 @@ async def disconnect(ctx, member: disnake.Member):
 async def паки(inter):
 	await inter.response.defer()
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
-	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_XblX']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера"]
+	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_SHOCK']} Sonic Пак", f"{emojis['VK_XblX']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера"]
 	player = plrs.find_one({"discordtag": inter.author.id})
 	if player != None:
 		passedlevels=list()
