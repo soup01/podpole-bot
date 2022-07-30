@@ -33,8 +33,10 @@ plrs = cluster["GMDOBOT"]["players"]
 mmbrs = cluster["GMDOBOT"]["members"]
 brthds = cluster["GMDOBOT"]["birthdays"]
 wkds = cluster["GMDOBOT"]["weekdays"]
+pcks = cluster["GMDOBOT"]["demonpacks"]
 
 editor = 927634802096611469
+gmdoguild = None
 translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
@@ -45,17 +47,6 @@ points = [250, 228, 210, 195, 180, 170, 160, 151, 144, 137, 132, 127, 123.6, 120
 		  55.3, 53.9, 52.3, 50.8, 49.4, 48, 46.7, 45.4, 44.2, 43, 41.8, 40.7, 39.5, 38.5, 37.4, 36.4, 35.4, 34.4, 33.5,
 		  32.6, 31.7, 30.9, 30, 29.2, 28.4, 27.7, 27, 26.2, 25.6, 25, 24.2, 23.5, 23, 22.3, 21.7, 21.2, 20.6, 20, 19.5,
 		  19, 18.5, 18, 17.6, 17.1, 16.7, 16.3]
-
-
-def calc_lb():
-	victors = {}
-	for lvl in deml.find():
-		for victor in lvl["victors"]:
-			if victor[0] not in victors.keys():
-				victors[victor[0]] = points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
-			else:
-				victors[victor[0]] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
-	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 
 async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
@@ -103,6 +94,31 @@ def get_passed_levels(player):
 	passedlevels.sort(key=lambda x: x['position'])
 	return passedlevels
 
+def calc_lb():
+	victors = {}
+	for lvl in deml.find():
+		for victor in lvl["victors"]:
+			if victor[0] not in victors.keys():
+				victors[victor[0]] = points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+			else:
+				victors[victor[0]] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+	for victor in victors:
+		print(victor)
+		if victors[victor] >= 9:
+			for item in pcks.find():
+				print(item)
+				j = 0
+				for level in item["levels"]:
+					print(victor)
+					print([i[0] for i in deml.find_one({"name": level})["victors"]])
+					if victor in [i[0] for i in deml.find_one({"name": level})["victors"]]:
+						j+=1
+					else:
+						break
+				if j==len(item["levels"]):
+					print("АЗДЦклпцл")
+					victors[victor] += item["points"]
+	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 def randimg(search):
 	q = urllib.parse.quote_plus(search, safe='?&=')
@@ -124,7 +140,9 @@ def gk(d):
 
 @client.event
 async def on_ready():
+	global gmdoguild
 	checkday.start()
+	gmdoguild = client.get_guild(884415899057160192)
 	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
 	print("Бот запущен!")
 
@@ -132,7 +150,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
 	gmobot = get(client.get_all_members(), id=993896677092106240)
-	emojis = {e.name: str(e) for e in client.emojis}
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	if gmobot.mention in message.content:
 		await message.channel.send(emojis["VK_WTF"])
 	if message.channel.id == 997728986807406652 and message.author.id != 993896677092106240:
@@ -159,13 +177,12 @@ async def checkday():
 	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
 	birthchannel = client.get_channel(886678288704090193)
 	chat = client.get_channel(886680631239663707)
-	guild = client.get_guild(886678201387073607)
-	imeninnikrole = get(guild.roles, id=1001748951529164810)
+	imeninnikrole = get(gmdoguild.roles, id=1001748951529164810)
 
 	if moscow_time.hour >= 7:
 		for birth in brthds.find():
 			imenin = await client.fetch_user(birth["member"])
-			imeninnik = guild.get_member(imenin.id)
+			imeninnik = gmdoguild.get_member(imenin.id)
 			if birth["day"] == moscow_time.day and birth["month"] == moscow_time.month:
 				if not birth["pozdravlen"]:
 					parse = "https://pozdraff.ru/pozdravleniya/5?for=man&count=2"
@@ -201,7 +218,7 @@ async def checkday():
 											  type=disnake.OptionType.integer)])
 async def дл(inter, страница: int = 1):
 	await inter.response.defer()
-	emojis = {e.name: str(e) for e in inter.client.emojis}
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	if random.randint(1, 10) == 1:
 		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
 	else:
@@ -217,7 +234,7 @@ async def дл(inter, страница: int = 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
 						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}{emojis['GD_STAR']}\n""",
-						value=f"Викторы: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
@@ -233,7 +250,7 @@ async def дл(inter, страница: int = 1):
 											  type=disnake.OptionType.integer)])
 async def легаси(inter, страница: int = 1):
 	await inter.response.defer()
-	emojis = {e.name: str(e) for e in inter.client.emojis}
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	lvlsamount = len([lvl for lvl in deml.find()])
 	if lvlsamount > 100:
 		pages = ceil((lvlsamount - 100) / 10)
@@ -246,7 +263,7 @@ async def легаси(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}**\n""",
-									value=f"Викторы: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
+									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 									inline=False)
 				embed.set_footer(text=f"Страница {page - 10}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
@@ -469,6 +486,32 @@ async def disconnect(ctx, member: disnake.Member):
 	else:
 		await ctx.send(f"Участник {member.display_name} не привязан к демонлисту ❌")
 
+@client.slash_command(name='паки',
+					  description='Показывает список паков с уровнями из демонлиста')
+async def паки(inter):
+	await inter.response.defer()
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
+	packs = [f"{emojis['VK_GRUST1']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_XblX']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера"]
+	player = plrs.find_one({"discordtag": inter.author.id})
+	if player != None:
+		passedlevels=list()
+		for j in range(len([q for q in pcks.find()])):
+			item = pcks.find_one({"id": j})
+			passedlevels.extend([i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]])
+		embed = disnake.Embed(title="Демон-паки", description=f"Пока что вы прошли всего **{translator.translate(f'{len(passedlevels)} levels', dest='ru').text if len(passedlevels) > 0 else '0 уровней'}** из паков.\n`P.S.` ***Название уровня жирным шрифтом*** - пройденный вами уровень.", colour=0x766ce5)
+		print(passedlevels)
+		for j in range(len([q for q in pcks.find()])):
+			item = pcks.find_one({"id": j})
+			if player != None:
+				passedlevels = [i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]]
+				embed.add_field(name=f"""{packs[item["id"]]}{' ✅' if len(passedlevels) == len(item["levels"]) else ''}\n(+{item["points"]}{emojis['GD_STAR']} за 100%)""",
+								value='Уровни: ' + ", ".join([f"***{i}***" if i in passedlevels else i for i in item["levels"]]) + f"\n`Пройденно {round(len(passedlevels)*100/len(item['levels']))}%/100%`", inline=True)
+	else:
+		embed = disnake.Embed(title="Демон-паки",colour=0x766ce5)
+		for item in pcks.find():
+			embed.add_field(name=packs[item["id"]], value=", ".join(item["levels"]), inline=True)
+	embed.set_footer(text="(C) Official Podpol'e Demonlist")
+	await inter.edit_original_message(embed=embed)
 
 @client.slash_command(name='уровень',
 					  description='Показывает всю информацию об игроке в демонлисте.',
@@ -477,6 +520,7 @@ async def disconnect(ctx, member: disnake.Member):
 											  required=True, type=disnake.OptionType.string)])
 async def уровень(inter, *, уровень=None):
 	await inter.response.defer()
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	if уровень is not None:
 		try:
 			lvl = deml.find_one({"position": int(уровень)})
@@ -488,7 +532,7 @@ async def уровень(inter, *, уровень=None):
 				lvl = None
 
 		if lvl is not None:
-			embed = disnake.Embed(title=f"{lvl['name']}", colour=0x6ad96e)
+			embed = disnake.Embed(title=lvl['name'] + f'({points[lvl["position"] -1]}{emojis["GD_STAR"]})', colour=0x6ad96e)
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):',
@@ -509,7 +553,7 @@ async def уровень(inter, *, уровень=None):
 											  required=False)])
 async def профиль(inter, игрок: disnake.User = None):
 	await inter.response.defer()
-	emojis = {e.name: str(e) for e in inter.client.emojis}
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	chzh = False
 	if игрок == None:
 		player = plrs.find_one({"discordtag": inter.author.id})
@@ -590,7 +634,8 @@ async def профиль(inter, игрок: disnake.User = None):
 											  type=disnake.OptionType.integer)])
 async def стата(inter, страница: int = 1):
 	await inter.response.defer()
-	emojis = {e.name: str(e) for e in inter.client.emojis}
+	print("fgf")
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	leaderboard = calc_lb()
 	playersamount = len(leaderboard)
 	pages = ceil(playersamount / 10)
@@ -756,9 +801,12 @@ async def хелп(inter, страница=None):
 		embed1.add_field(name='/рулетка <рекорд/"сброс"/"тек">',
 						 value=f'```Начинает так называемую "рулетку" демонов пройденных в Подполье. Чтобы узнать, как играть - пропишите \n/хелп рулетка.```',
 						 inline=True)
+		embed1.add_field(name='/паки',
+						 value=f'```Показывает список имеющихся на данный момент паков с уровнями из демонлиста.```',
+						 inline=True)
 		embed1.add_field(name='/длправила',
 						 value=f'```Показывает правила для попадания вашего прохождения в демонлист.```',
-						 inline=False)
+						 inline=True)
 		embed1.set_footer(text=f"Страница 1/2. (C) Official Podpol'e Bot")
 
 		embed2 = disnake.Embed(title="😜 Приколы",
