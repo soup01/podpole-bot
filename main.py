@@ -484,7 +484,7 @@ async def паки(inter, страница: int = 1):
 	await inter.response.defer()
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 
-	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_SHOCK']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера", f"{emojis['scary']} Кансерный Пак", f"{emojis['GD_DEMON']} РК Пак"]
+	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_SHOCK']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера", f"{emojis['scary']} Кансерный Пак", f"🇷🇺 РК Пак", f"{emojis['GD_DEMONSLAYER']} Хелл Пак"]
 	player = plrs.find_one({"discordtag": inter.author.id})
 	embeds = list()
 	pages = ceil(len(packs) / 9)
