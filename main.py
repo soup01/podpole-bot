@@ -476,29 +476,41 @@ async def disconnect(ctx, member: disnake.Member):
 		await ctx.send(f"Участник {member.display_name} не привязан к демонлисту ❌")
 
 @client.slash_command(name='паки',
-					  description='Показывает список паков с уровнями из демонлиста')
-async def паки(inter):
+					  description='Показывает список паков с уровнями из демонлиста',
+					  options=[disnake.Option("страница", description="Номер страницы", required=False,
+											  type=disnake.OptionType.integer)]
+					  )
+async def паки(inter, страница: int = 1):
 	await inter.response.defer()
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
-	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_SHOCK']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера"]
+
+	packs = [f"{emojis['VK_GRUST']} Temple Пак", f"{emojis['VK_KRUT']} OLD NC Пак", f"{emojis['VK_CLOWN']} CraZy Пак", f"{emojis['VK_glasses']} Sonic Пак", f"{emojis['VK_SHOCK']} SW Пак", f"{emojis['VK_XblX']} Фановый Пак", f"{emojis['VK_EDY']} Пак уровней с быстрым темпом", f"{emojis['VK_GAMER']} XL Пак", f"{emojis['Cube_Angara']} Пак Ангараривера", f"{emojis['scary']} Кансерный Пак", f"{emojis['GD_DEMON']} РК Пак"]
 	player = plrs.find_one({"discordtag": inter.author.id})
+	embeds = list()
+	pages = ceil(len(packs) / 9)
+
 	if player != None:
 		passedlevels=list()
 		for j in range(len([q for q in pcks.find()])):
 			item = pcks.find_one({"id": j})
 			passedlevels.extend([i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]])
-		embed = disnake.Embed(title="Демон-паки", description=f"Пока что вы прошли всего **{translator.translate(f'{len(passedlevels)} levels', dest='ru').text if len(passedlevels) > 0 else '0 уровней'}** из паков.\n`P.S.` ***Название уровня жирным шрифтом*** - пройденный вами уровень.", colour=0x766ce5)
-		for j in range(len([q for q in pcks.find()])):
+	for page in range(1, pages + 1):
+		if player != None:
+			embed = disnake.Embed(title="Демон-паки", description=f"Пока что вы прошли всего **{translator.translate(f'{len(passedlevels)} levels', dest='ru').text if len(passedlevels) > 0 else '0 уровней'}** из паков.\n`P.S.` ***Название уровня жирным шрифтом*** - пройденный вами уровень.", colour=0x766ce5)
+		else:
+			embed = disnake.Embed(title="Демон-паки", colour=0x766ce5)
+		for j in range(9 * (page - 1), page * 9 if len(packs) > 9 and (len(packs) - (page - 1) * 9) >= 9 else len(packs)):
 			item = pcks.find_one({"id": j})
 			if player != None:
-				passedlevels = [i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]]
-				embed.add_field(name=f"""{packs[item["id"]]}{' ✅' if len(passedlevels) == len(item["levels"]) else ''}\n(+{item["points"]}{emojis['GD_STAR']} за 100%)""",
-								value='Уровни: ' + ", ".join([f"***{i}***" if i in passedlevels else i for i in item["levels"]]) + f"\n`Пройденно {round(len(passedlevels)*100/len(item['levels']))}%/100%`", inline=True)
-	else:
-		embed = disnake.Embed(title="Демон-паки",colour=0x766ce5)
-		for item in pcks.find():
-			embed.add_field(name=packs[item["id"]], value=", ".join(item["levels"]), inline=True)
-	embed.set_footer(text="(C) Official Podpol'e Demonlist")
+				passedlevels2 = [i for i in item["levels"] if player["nick"] in [i[0] for i in deml.find_one({"name": i})["victors"]]]
+				embed.add_field(name=f"""{packs[item["id"]]}{' ✅' if len(passedlevels2) == len(item["levels"]) else ''}\n(+{item["points"]}{emojis['GD_STAR']} за 100%)""",
+								value='Уровни: ' + ", ".join([f"***{i}***" if i in passedlevels2 else i for i in item["levels"]]) + f"\n`Пройденно {round(len(passedlevels2)*100/len(item['levels']))}%/100%`", inline=True)
+			else:
+				embed.add_field(name=packs[item["id"]], value=", ".join(item["levels"]), inline=True)
+		embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
+		embeds.append(embed)
+
+	await browse_pages(inter, страница, pages, embeds)
 	await inter.edit_original_message(embed=embed)
 
 @client.slash_command(name='уровень',
@@ -789,7 +801,7 @@ async def хелп(inter, страница=None):
 		embed1.add_field(name='/рулетка <рекорд/"сброс"/"тек">',
 						 value=f'```Начинает так называемую "рулетку" демонов пройденных в Подполье. Чтобы узнать, как играть - пропишите \n/хелп рулетка.```',
 						 inline=True)
-		embed1.add_field(name='/паки',
+		embed1.add_field(name='/паки <страница>',
 						 value=f'```Показывает список имеющихся на данный момент паков с уровнями из демонлиста.```',
 						 inline=True)
 		embed1.add_field(name='/длправила',
