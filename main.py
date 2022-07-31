@@ -506,7 +506,7 @@ async def паки(inter, страница: int = 1):
 				embed.add_field(name=f"""{packs[item["id"]]}{' ✅' if len(passedlevels2) == len(item["levels"]) else ''}\n(+{item["points"]}{emojis['GD_STAR']} за 100%)""",
 								value='Уровни: ' + ", ".join([f"***{i}***" if i in passedlevels2 else i for i in item["levels"]]) + f"\n`Пройденно {round(len(passedlevels2)*100/len(item['levels']))}%/100%`", inline=True)
 			else:
-				embed.add_field(name=packs[item["id"]], value=", ".join(item["levels"]), inline=True)
+				embed.add_field(name=packs[item["id"]] + f"\n(+{item["points"]}{emojis['GD_STAR']} за 100%)", value=", ".join(item["levels"]), inline=True)
 		embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
 		embeds.append(embed)
 
