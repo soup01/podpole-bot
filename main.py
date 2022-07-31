@@ -845,9 +845,6 @@ async def длправила(inter):
 					inline=True)
 	embed.add_field(name="Правило 1.4",
 					value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
-	embed.add_field(name="Правило 1.5",
-					value="```Для попадания в демонлист, также нужно обязательно пройти уровень GMDO Challenge от всемирно известного игрока pol1d3x (ID: 79889826).```", inline=True)
-	embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
 	await inter.edit_original_message(embed=embed)
 
 
