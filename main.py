@@ -506,7 +506,7 @@ async def паки(inter, страница: int = 1):
 				embed.add_field(name=f"""{packs[item["id"]]}{' ✅' if len(passedlevels2) == len(item["levels"]) else ''}\n(+{item["points"]}{emojis['GD_STAR']} за 100%)""",
 								value='Уровни: ' + ", ".join([f"***{i}***" if i in passedlevels2 else i for i in item["levels"]]) + f"\n`Пройденно {round(len(passedlevels2)*100/len(item['levels']))}%/100%`", inline=True)
 			else:
-				embed.add_field(name=packs[item["id"]] + f'\n(+{item["points"]}{emojis["GD_STAR"]} за 100%)', value='Уровни: ' + ", ".join(item["levels"]), inline=True)
+				embed.add_field(name=packs[item["id"]] + f'\n(+{item["points"]}{emojis["GD_STAR"]} за 100%)', value=", ".join(item["levels"]), inline=True)
 		embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
 		embeds.append(embed)
 
@@ -537,8 +537,7 @@ async def уровень(inter, *, уровень=None):
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):',
-							value=', '.join([f'**[{vic[0]}]({vic[1]})**' for vic in lvl['victors']]) if len(
-								lvl['victors']) != 0 else 'нет', inline=False)
+							value=', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else f'**{vic[0]}**' for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет', inline=False)
 			embed.set_footer(text="(C) Official Podpol'e Demonlist")
 			await inter.edit_original_message(embed=embed)
 		else:
@@ -845,6 +844,7 @@ async def длправила(inter):
 					inline=True)
 	embed.add_field(name="Правило 1.4",
 					value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
+	embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
 	await inter.edit_original_message(embed=embed)
 
 
