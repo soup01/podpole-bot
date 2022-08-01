@@ -255,7 +255,7 @@ async def легаси(inter, страница: int = 1):
 					embed.add_field(name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}**\n""",
 									value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 									inline=False)
-				embed.set_footer(text=f"Страница {page - 10}/{pages}. (C) Official Podpol'e Demonlist")
+				embed.set_footer(text=f"Страница {page - 12}/{pages}. (C) Official Podpol'e Demonlist")
 				embeds.append(embed)
 
 			await browse_pages(inter, страница, pages, embeds)
