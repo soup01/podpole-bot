@@ -213,10 +213,10 @@ async def дл(inter, страница: int = 1):
 		await inter.edit_original_message(content="ХУЙ ТЕБЕ А НЕ ДЕМОНЛИСТ")
 	else:
 		lvlsamount = len([lvl for lvl in deml.find()])
-		pages = ceil(lvlsamount / 10) if lvlsamount <= 130 else 13
+		pages = ceil(lvlsamount / 10) if lvlsamount <= 120 else 12
 		if страница <= pages:
 			embeds = list()
-			for page in range(1, pages + 1 if lvlsamount <= 130 else 14):
+			for page in range(1, pages + 1 if lvlsamount <= 120 else 13):
 				embed = disnake.Embed(title="Офицальный топ игроков Подполья", colour=0x766ce5,
 									  description="**Место | Название | Автор | Поинты**")
 				for i in range(10 * (page - 1) + 1, (page * 10 if lvlsamount > 10 and (
@@ -243,10 +243,10 @@ async def легаси(inter, страница: int = 1):
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
 	lvlsamount = len([lvl for lvl in deml.find()])
 	if lvlsamount > 100:
-		pages = ceil((lvlsamount - 130) / 10)
+		pages = ceil((lvlsamount - 120) / 10)
 		if страница <= pages:
 			embeds = list()
-			for page in range(14, pages + 14):
+			for page in range(13, pages + 13):
 				embed = disnake.Embed(title="Офицальный топ игроков Подполья", colour=0x766ce5,
 									  description=f"*За каждый уровень из легаси даётся 3*{emojis['GD_STAR']}\n**Место | Название | Автор**")
 				for i in range(10 * (page - 1) + 1, (page * 10 if lvlsamount > 10 and (
