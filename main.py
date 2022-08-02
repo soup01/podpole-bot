@@ -100,15 +100,17 @@ def calc_lb():
 	for lvl in deml.find():
 		for victor in lvl["victors"]:
 			if victor[0] not in victors.keys():
-				victors[victor[0]] = points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+				victors[victor[0]] = [points[lvl["position"] - 1] if lvl["position"] <= 100 else 3, 0]
 			else:
-				victors[victor[0]] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+				victors[victor[0]][0] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+
 	for victor in victors:
-		if victors[victor] >= 9:
+		if victors[victor][0] >= 9:
 			for item in pcks.find():
 				passedlevels = [i["name"] for i in get_passed_levels(victor)]
 				if len(item["levels"]) == len(list(filter(lambda i: i in passedlevels, item["levels"]))):
-					victors[victor] += item["points"]
+					victors[victor][1] += 1
+					victors[victor][0] += item["points"]
 	return {k: v for k, v in sorted(victors.items(), reverse=True, key=lambda item: item[1])}
 
 def randimg(search):
@@ -599,13 +601,12 @@ async def профиль(inter, игрок: disnake.User = None):
 					legacy += 1
 			passedlevelsf = ", ".join(passedlevelsf)
 
-			embed = disnake.Embed(title=f"Профиль {gk(leaderboard)[gk(leaderboardlower).index(player)]}",
+			embed = disnake.Embed(title=f"Профиль {gk(leaderboard)[gk(leaderboardlower).index(player)]} (**{round(leaderboardlower[player][0], 1)}**{emojis['GD_STAR']})",
 								  colour=0x82e0da)
 			embed.add_field(name='📊 Место в топе:', value=f"**#{gk(leaderboardlower).index(player) + 1}**",
 							inline=True)
-			embed.add_field(name='📈 Поинтов:',
-							value=f"**{round(leaderboardlower[player], 1)}**{emojis['GD_STAR']}", inline=True)
 			embed.add_field(name='🧮 Пройдено уровней:', value=f"**{len(passedlevels)}**", inline=True)
+			embed.add_field(name='📁 Пройдено паков:', value=f"**{leaderboardlower[player][1]}**", inline=True)
 			embed.add_field(name='🟥 Main:', value=f"**{main}**", inline=True)
 			embed.add_field(name='🟧 Extended:', value=f"**{len(passedlevels) - main - legacy}**", inline=True)
 			embed.add_field(name='🟩 Legacy:', value=f"**{legacy}**", inline=True)
@@ -650,7 +651,7 @@ async def стата(inter, страница: int = 1):
 								   playersamount - (page - 1) * 10) >= 10 else playersamount) + 1):
 				passedlevels = get_passed_levels(victors[i - 1])
 				places.append(
-					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]], 1)}{emojis['GD_STAR']} | {len(passedlevels)} {emojis['GD_DEMON']}")
+					f"**#{i}** **{victors[i - 1]}** — {round(leaderboard[victors[i - 1]][0], 1)}{emojis['GD_STAR']} | {len(passedlevels)} {emojis['GD_DEMON']}")
 			embed = disnake.Embed(title="Офицальный топ игроков Подполья", description="\n\n".join(places),
 								  colour=0x766ce5)
 			embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
