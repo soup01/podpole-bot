@@ -161,6 +161,7 @@ async def on_message(message):
 			await asyncio.sleep(3)
 			await message.delete()
 			await msg.delete()
+	print(message.content)
 	await client.process_commands(message)
 
 
