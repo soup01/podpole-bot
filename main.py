@@ -536,7 +536,7 @@ async def уровень(inter, *, уровень=None):
 
 		if lvl is not None:
 			print(lvl["position"])
-			embed = disnake.Embed(title=lvl['name'] + f' ({points[lvl["position"] -1]}{emojis["GD_STAR"]})' if lvl["position"] <= 100 else lvl['name'] + f' (3 {emojis["GD_STAR"]})', colour=0x6ad96e)
+			embed = disnake.Embed(title=lvl['name'] + f' ({points[lvl["position"] -1]}{emojis["GD_STAR"]})' if lvl["position"] <= 120 else lvl['name'] + f' (3 {emojis["GD_STAR"]})', colour=0x6ad96e)
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
 			embed.add_field(name='👨‍💻 Автор:', value=f"**{lvl['author']}**", inline=False)
 			embed.add_field(name=f'👨‍👨‍👦 Викторы ({len(lvl["victors"])}):',
