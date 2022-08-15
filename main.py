@@ -161,7 +161,8 @@ async def on_message(message):
 			await asyncio.sleep(3)
 			await message.delete()
 			await msg.delete()
-	print(message.content)
+	if "🔬" in message.content:
+		await message.add_reaction("🔬")
 	await client.process_commands(message)
 
 
