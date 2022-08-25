@@ -36,6 +36,7 @@ wkds = cluster["GMDOBOT"]["weekdays"]
 pcks = cluster["GMDOBOT"]["demonpacks"]
 
 editor = 927634802096611469
+hello_channel = client.get_guild(886678202129448972)
 gmdoguild = None
 translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
@@ -138,7 +139,16 @@ async def on_ready():
 	gmdoguild = client.get_guild(886678201387073607)
 	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
 	print("Бот запущен!")
-
+	
+@client.event
+async def on_member_join(member):
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
+	await hello_channel.send(f'{member.mention}, выйди и зайди нормально, дружище {emojis[":VK_HELLO:"]}')
+	
+@client.event
+async def on_member_remove(member):
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
+	await hello_channel.send(f'Ты прав, {member.name}, иди помоги маме {emojis[":XAPOW:"]}')
 
 @client.event
 async def on_message(message):
@@ -745,23 +755,6 @@ async def редис(inter):
 	embed.set_footer(text=f"(C) Official Podpol'e Bot")
 
 	await inter.edit_original_message(embed=embed)
-
-
-@client.slash_command(name='имг',
-					  description='Выдаёт случайную картинку по запросу из Google картинок.',
-					  options=[disnake.Option('запрос', description="Запрос, по которому нужно будет искать картинку.",
-											  required=True, type=disnake.OptionType.string)])
-async def имг(inter, *, запрос):
-	await inter.response.defer()
-	redis = randimg(запрос)
-
-	embed = disnake.Embed(title=f"Случайная картинка по запросу **{запрос}**", description=redis["title"],
-						  colour=disnake.Colour.random())
-	embed.set_image(url=redis["link"])
-	embed.set_footer(text=f"(C) Official Podpol'e Bot")
-
-	await inter.edit_original_message(embed=embed)
-
 
 @client.slash_command(name='хелп',
 					  description='Помощь по командам бота.',
