@@ -41,6 +41,7 @@ translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
 
+
 points = [250, 228, 210, 194, 180, 169, 159, 150, 143, 137, 132, 127.5, 123.6, 120, 117.4, 114, 112.6, 111, 109, 108,
 		  106,
 		  105.5, 104, 102.8, 101, 100.1, 98, 97, 96.3, 95, 93.8, 92.5, 91, 90, 88.9, 86.7, 84, 82.5, 80, 78.6, 76.7, 74,
@@ -139,24 +140,23 @@ def gk(d):
 
 @client.event
 async def on_ready():
-	global gmdoguild
-	checkday.start()
-	gmdoguild = client.get_guild(886678201387073607)
-	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
-	print("Бот запущен!")
-
+    global gmdoguild, hello_channel
+    checkday.start()
+    gmdoguild = client.get_guild(886678201387073607)
+    hello_channel = client.get_channel(886678202129448972)
+    await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
+    print("реально рабоатет")
 
 @client.event
 async def on_member_join(member):
-	emojis = {e.name: str(e) for e in gmdoguild.emojis}
-	hello_channel = client.get_guild(886678202129448972)
-	await hello_channel.send(f'{member.mention}, выйди и зайди нормально, дружище {emojis[":VK_HELLO:"]}')
+    emojis = {e.name: str(e) for e in gmdoguild.emojis}
+    print(emojis)
+    await hello_channel.send(f'{member.mention}, выйди и зайди нормально, дружище {emojis["VK_HELLO"]}. Теперь нас {gmdoguild.member_count}! {emojis["VK_EBATB"]}')
 
 @client.event
 async def on_member_remove(member):
 	emojis = {e.name: str(e) for e in gmdoguild.emojis}
-	hello_channel = client.get_guild(886678202129448972)
-	await hello_channel.send(f'Ты прав, {member.name}, иди помоги маме {emojis[":XAPOW:"]}')
+	await hello_channel.send(f'Ты прав, {member.name}, иди помоги маме {emojis["XAPOW"]}. Нас теперь {gmdoguild.member_count} кстати =(')
 
 @client.event
 async def on_message(message):
@@ -186,44 +186,38 @@ async def on_message(message):
 
 @tasks.loop(seconds=60)
 async def checkday():
-	moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
-	birthchannel = client.get_channel(886678288704090193)
-	chat = client.get_channel(886680631239663707)
-	imeninnikrole = get(gmdoguild.roles, id=1001748951529164810)
-
-	if moscow_time.hour >= 7:
-		for birth in brthds.find():
-			imenin = await client.fetch_user(birth["member"])
-			imeninnik = gmdoguild.get_member(imenin.id)
-			if birth["day"] == moscow_time.day and birth["month"] == moscow_time.month:
-				if not birth["pozdravlen"]:
-					parse = "https://pozdraff.ru/pozdravleniya/5?for=man&count=2"
-					headers = {
-						"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
-
-					page = requests.get(parse, headers=headers)
-					soup = BeautifulSoup(page.content, "html.parser")
-					pozdravlenie = soup.find("p", "lead greeting").get_text("\n", strip=True)
-
-					embed = disnake.Embed(colour=0xfff94a)
-					embed.set_image(randimg("открытки с днём рождения забавные")["link"])
-
-					await birthchannel.send(
-						f"У {imenin.mention} сегодня день рождения! ПОЗДРАВЛЯЕМ! 🎉🎊\n{pozdravlenie}", embed=embed)
-					await imeninnik.add_roles(imeninnikrole)
-					brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": True}})
-			else:
-				brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": False}})
-				await imeninnik.remove_roles(imeninnikrole)
-
-	if moscow_time.weekday() == 4:
-		if not wkds.find_one({"pisya": True})["friday"]:
-			await chat.send("УРА!!!!! ПЯТНИЦА!!!!!")
-			await chat.send(randimg("пятница открытки")["link"])
-			wkds.update_one({"pisya": True}, {"$set": {"friday": True}})
-	else:
-		wkds.update_one({"pisya": True}, {"$set": {"friday": False}})
-
+    print("hi")
+    moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
+    birthchannel = client.get_channel(886678288704090193)
+    chat = client.get_channel(886680631239663707)
+    imeninnikrole = get(gmdoguild.roles, id=1001748951529164810)
+    if moscow_time.weekday() == 4:
+        if not wkds.find_one({"pisya": True})["friday"]:
+            await chat.send("УРА!!!!! ПЯТНИЦА!!!!!")
+            await chat.send(randimg("пятница открытки")["link"])
+            wkds.update_one({"pisya": True}, {"$set": {"friday": True}})
+    else:
+        wkds.update_one({"pisya": True}, {"$set": {"friday": False}})
+    
+    if moscow_time.hour >= 7:
+        for birth in brthds.find():
+            imenin = await client.fetch_user(birth["member"])
+            imeninnik = gmdoguild.get_member(imenin.id)
+            if birth["day"] == moscow_time.day and birth["month"] == moscow_time.month:
+                if not birth["pozdravlen"]:
+                    parse = "https://pozdraff.ru/pozdravleniya/5?for=man&count=2"
+                    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
+                    page = requests.get(parse, headers=headers)
+                    soup = BeautifulSoup(page.content, "html.parser")
+                    pozdravlenie = soup.find("p", "lead greeting").get_text("\n", strip=True)
+                    embed = disnake.Embed(colour=0xfff94a)
+                    embed.set_image(randimg("открытки с днём рождения забавные")["link"])
+                    await birthchannel.send(f"У {imenin.mention} сегодня день рождения! ПОЗДРАВЛЯЕМ! 🎉🎊\n{pozdravlenie}", embed=embed)
+                    await imeninnik.add_roles(imeninnikrole)
+                    brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": True}})
+            else:
+                brthds.update_one({"member": imenin.id}, {"$set": {"pozdravlen": False}})
+            await imeninnik.remove_roles(imeninnikrole)
 
 @client.slash_command(name='дл',
 					  description='Показывает топ 100 сложнейших демонов, пройденных в Подполье.',
@@ -878,6 +872,5 @@ async def длправила(inter):
 					value="```В демонлист вы можете попасть только при наличии 10+ уровня на сервере.```", inline=True)
 	embed.set_footer(text=f"(C) Official Podpol'e Demonlist")
 	await inter.edit_original_message(embed=embed)
-
 
 client.run(token)
