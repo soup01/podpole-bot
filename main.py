@@ -42,19 +42,6 @@ API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
 
 
-points = [250, 228, 210, 194, 180, 169, 159, 150, 143, 137, 132, 127.5, 123.6, 120, 117.4, 114, 112.6, 111, 109, 108,
-		  106,
-		  105.5, 104, 102.8, 101, 100.1, 98, 97, 96.3, 95, 93.8, 92.5, 91, 90, 88.9, 86.7, 84, 82.5, 80, 78.6, 76.7, 74,
-		  73,
-		  71.5, 69.9, 68, 66, 65.4, 64, 62.65, 61, 60, 58.8, 57, 56.5, 55.2, 53.9, 52, 51, 50.1, 48, 47, 46, 45.5, 44,
-		  43.4, 42, 41.5, 40.54, 39, 38.7, 37.8, 34, 36.16, 35.3, 34, 33.8, 33.06, 32, 31, 30.9, 30.2, 29.6, 29, 28.3,
-		  27.82,
-		  27, 26.6, 26.09, 25.5, 25, 24.5, 24, 23.55, 23, 22.6, 22.1, 21.7, 21.3, 20.9, 20.5, 20, 19.78, 19.4, 19, 18.7,
-		  18.38, 18, 17.7, 17.42, 17.1, 16.83, 16.5, 16.2, 16, 15.74, 15.5, 15.2, 15, 14.7, 14.52, 14.3, 14, 13.87,
-		  13.6,
-		  13.47, 13.2, 13, 12.9, 12.72]
-
-
 async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 	msg = await ctx.edit_original_message(embed=embeds[pg - 1])
 
@@ -88,6 +75,16 @@ async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 				await msg.remove_reaction(str(reaction.emoji), ctx.author)
 				await ctx.edit_original_message(embed=embeds[pg - 1])
 
+def get_points(pos):
+	parse = f"https://pointercrate.com/demonlist/{pos}"
+	headers = {
+	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
+
+	page = requests.get(parse, headers=headers)
+	soup = BeautifulSoup(page.content, "html.parser")
+	points = soup.find("div", "underlined pad flex wrap").findAll("span")
+	points = get_points(-1) if "100%" in points[-1].text else points[len(points)-2]
+	return points.text.replace(points.find("b").text, ""))
 
 def get_passed_levels(player):
 	passedlevels = []
@@ -106,9 +103,9 @@ def calc_lb():
 	for lvl in deml.find():
 		for victor in lvl["victors"]:
 			if victor[0] not in victors.keys():
-				victors[victor[0]] = [points[lvl["position"] - 1] if lvl["position"] <= 100 else 3, 0]
+				victors[victor[0]] = [get_points(lvl["position"]) if lvl["position"] <= 100 else 3, 0]
 			else:
-				victors[victor[0]][0] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
+				victors[victor[0]][0] += get_points(lvl["position"] - 1) if lvl["position"] <= 100 else 3
 
 	for victor in victors:
 		if victors[victor][0] >= 9:
@@ -240,7 +237,7 @@ async def дл(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
-						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i - 1]}{emojis['GD_STAR']}\n""",
+						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {get_points(i)}{emojis['GD_STAR']}\n""",
 						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
@@ -569,7 +566,7 @@ async def уровень(inter, *, уровень=None):
 
 		if lvl is not None:
 			print(lvl["position"])
-			embed = disnake.Embed(title=lvl['name'] + f' ({points[lvl["position"] - 1]}{emojis["GD_STAR"]})' if lvl[
+			embed = disnake.Embed(title=lvl['name'] + f' ({get_points(lvl["position"])}{emojis["GD_STAR"]})' if lvl[
 																													"position"] <= 120 else
 			lvl['name'] + f' (3 {emojis["GD_STAR"]})', colour=0x6ad96e)
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
