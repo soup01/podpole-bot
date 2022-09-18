@@ -41,6 +41,7 @@ translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
 
+points = list()
 
 async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 	msg = await ctx.edit_original_message(embed=embeds[pg - 1])
@@ -74,17 +75,7 @@ async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 						pg = 1
 				await msg.remove_reaction(str(reaction.emoji), ctx.author)
 				await ctx.edit_original_message(embed=embeds[pg - 1])
-
-def get_points(pos):
-	parse = f"https://pointercrate.com/demonlist/{pos}"
-	headers = {
-	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
-
-	page = requests.get(parse, headers=headers)
-	soup = BeautifulSoup(page.content, "html.parser")
-	points = soup.find("div", "underlined pad flex wrap").findAll("span")
-	points = get_points(-1) if "100%" in points[-1].text else points[len(points)-2]
-	return points.text.replace(points.find("b").text, "")
+	
 
 def get_passed_levels(player):
 	passedlevels = []
@@ -103,9 +94,9 @@ def calc_lb():
 	for lvl in deml.find():
 		for victor in lvl["victors"]:
 			if victor[0] not in victors.keys():
-				victors[victor[0]] = [get_points(lvl["position"]) if lvl["position"] <= 100 else 3, 0]
+				victors[victor[0]] = [points[lvl["position"] - 1] if lvl["position"] <= 100 else 3, 0]
 			else:
-				victors[victor[0]][0] += get_points(lvl["position"] - 1) if lvl["position"] <= 100 else 3
+				victors[victor[0]][0] += points[lvl["position"] - 1] if lvl["position"] <= 100 else 3
 
 	for victor in victors:
 		if victors[victor][0] >= 9:
@@ -137,18 +128,28 @@ def gk(d):
 
 @client.event
 async def on_ready():
-    global gmdoguild, hello_channel
-    checkday.start()
-    gmdoguild = client.get_guild(886678201387073607)
-    hello_channel = client.get_channel(886678202129448972)
-    await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
-    print("реально рабоатет")
+	global gmdoguild, hello_channel, points
+	checkday.start()
+	gmdoguild = client.get_guild(886678201387073607)
+	hello_channel = client.get_channel(886678202129448972)
+	
+	headers = {
+		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.206 (Edition Yx GX)"}
+	for i in range(130):
+		page = requests.get(f"https://pointercrate.com/demonlist/{i+1}", headers=headers)
+		soup = BeautifulSoup(page.content, "html.parser")
+		point = soup.find("div", "underlined pad flex wrap").findAll("span")
+		point = point[-1] if "100%" in point[-1].text else point[len(point)-2]
+		points.append(point.text.replace(point.find("b").text, ""))
+	
+	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
+	print("реально рабоатет")
 
 @client.event
 async def on_member_join(member):
-    emojis = {e.name: str(e) for e in gmdoguild.emojis}
-    print(emojis)
-    await hello_channel.send(f'{member.mention}, выйди и зайди нормально, дружище {emojis["VK_HELLO"]}. Теперь нас {gmdoguild.member_count}! {emojis["VK_EBATB"]}')
+	emojis = {e.name: str(e) for e in gmdoguild.emojis}
+	print(emojis)
+	await hello_channel.send(f'{member.mention}, выйди и зайди нормально, дружище {emojis["VK_HELLO"]}. Теперь нас {gmdoguild.member_count}! {emojis["VK_EBATB"]}')
 
 @client.event
 async def on_member_remove(member):
@@ -237,7 +238,7 @@ async def дл(inter, страница: int = 1):
 						lvlsamount - (page - 1) * 10) >= 10 else lvlsamount) + 1):
 					lvl = deml.find_one({"position": i})
 					embed.add_field(
-						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {get_points(i)}{emojis['GD_STAR']}\n""",
+						name=f"""**#{i}** | **{lvl["name"]}** by **{lvl["author"]}** | {points[i-1]}{emojis['GD_STAR']}\n""",
 						value=f"Victors: {', '.join([f'**[{vic[0]}]({vic[1]})**' if vic[1] != None else vic[0] for vic in lvl['victors']]) if len(lvl['victors']) != 0 else 'нет'}",
 						inline=False)
 				embed.set_footer(text=f"Страница {page}/{pages}. (C) Official Podpol'e Demonlist")
@@ -566,7 +567,7 @@ async def уровень(inter, *, уровень=None):
 
 		if lvl is not None:
 			print(lvl["position"])
-			embed = disnake.Embed(title=lvl['name'] + f' ({get_points(lvl["position"])}{emojis["GD_STAR"]})' if lvl[
+			embed = disnake.Embed(title=lvl['name'] + f' ({points[lvl["position"]-1]}{emojis["GD_STAR"]})' if lvl[
 																													"position"] <= 120 else
 			lvl['name'] + f' (3 {emojis["GD_STAR"]})', colour=0x6ad96e)
 			embed.add_field(name='📑 Позиция:', value=f"**#{lvl['position']}**", inline=False)
