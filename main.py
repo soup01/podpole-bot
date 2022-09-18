@@ -41,7 +41,7 @@ translator = Translator(service_urls=['translate.googleapis.com'])
 API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
 SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
 
-points = list()
+points = []
 
 async def browse_pages(ctx, pg, pages, embeds, more_buttons=True):
 	msg = await ctx.edit_original_message(embed=embeds[pg - 1])
