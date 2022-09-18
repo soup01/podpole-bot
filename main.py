@@ -84,7 +84,7 @@ def get_points(pos):
 	soup = BeautifulSoup(page.content, "html.parser")
 	points = soup.find("div", "underlined pad flex wrap").findAll("span")
 	points = get_points(-1) if "100%" in points[-1].text else points[len(points)-2]
-	return points.text.replace(points.find("b").text, ""))
+	return points.text.replace(points.find("b").text, "")
 
 def get_passed_levels(player):
 	passedlevels = []
