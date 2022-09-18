@@ -140,7 +140,7 @@ async def on_ready():
 		soup = BeautifulSoup(page.content, "html.parser")
 		point = soup.find("div", "underlined pad flex wrap").findAll("span")
 		point = point[-1] if "100%" in point[-1].text else point[len(point)-2]
-		points.append(point.text.replace(point.find("b").text, ""))
+		points.append(float(point.text.replace(point.find("b").text, "")))
 	
 	await client.change_presence(activity=disnake.Game(name="лучший сервер!"))
 	print("реально рабоатет")
