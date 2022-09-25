@@ -184,7 +184,6 @@ async def on_message(message):
 
 @tasks.loop(seconds=60)
 async def checkday():
-    print("hi")
     moscow_time = datetime.datetime.now(pytz.timezone('Europe/Moscow'))
     birthchannel = client.get_channel(886678288704090193)
     chat = client.get_channel(886680631239663707)
