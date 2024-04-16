@@ -35,11 +35,11 @@ brthds = cluster["GMDOBOT"]["birthdays"]
 wkds = cluster["GMDOBOT"]["weekdays"]
 pcks = cluster["GMDOBOT"]["demonpacks"]
 
-editor = 927634802096611469
+editor = HUI
 gmdoguild = None
 translator = Translator(service_urls=['translate.googleapis.com'])
-API_KEY = 'AIzaSyCiet7DWMafTzv-hTelx6pd1JUV_cTQOZE'
-SEARCH_ENGINE_ID = '9f1f6320d8ce8bef8'
+API_KEY = HUI
+SEARCH_ENGINE_ID = HUI
 
 points = list()
 
